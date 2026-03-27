@@ -132,6 +132,22 @@ export default function Home() {
     router.navigate({ to: `/mcq/${slug}` });
   };
 
+  const handlePractice = (examName: string) => {
+    const slug = examName
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+    router.navigate({ to: `/mock-test/${slug}` });
+  };
+
+  const handleLive = (examName: string) => {
+    const slug = examName
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+    router.navigate({ to: `/live-test/${slug}` });
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f5f5]">
       <Header />
@@ -246,11 +262,11 @@ export default function Home() {
                 <span className="text-xs font-semibold text-gray-800 text-center leading-tight">
                   {card.name}
                 </span>
-                <div className="flex gap-1 flex-wrap justify-center">
+                <div className="grid grid-cols-2 gap-1 w-full">
                   <button
                     type="button"
                     onClick={() => handleTyping(card.name)}
-                    className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded hover:bg-blue-700 transition-colors"
+                    className="text-xs bg-blue-600 text-white px-1 py-0.5 rounded hover:bg-blue-700 transition-colors"
                     data-ocid={`exam.typing.button.${i + 1}`}
                   >
                     Typing
@@ -258,10 +274,26 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => handleMCQ(card.name)}
-                    className="text-xs bg-orange-500 text-white px-2 py-0.5 rounded hover:bg-orange-600 transition-colors"
+                    className="text-xs bg-orange-500 text-white px-1 py-0.5 rounded hover:bg-orange-600 transition-colors"
                     data-ocid={`exam.mcq.button.${i + 1}`}
                   >
                     MCQ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handlePractice(card.name)}
+                    className="text-xs bg-orange-600 text-white px-1 py-0.5 rounded hover:bg-orange-700 transition-colors"
+                    data-ocid={`exam.practice.button.${i + 1}`}
+                  >
+                    Practice
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLive(card.name)}
+                    className="text-xs bg-[#c62828] text-white px-1 py-0.5 rounded hover:bg-red-800 transition-colors"
+                    data-ocid={`exam.live.button.${i + 1}`}
+                  >
+                    Live
                   </button>
                 </div>
               </div>

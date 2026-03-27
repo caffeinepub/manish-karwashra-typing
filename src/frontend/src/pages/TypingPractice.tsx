@@ -12,10 +12,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import BoldText, { stripBold } from "../components/BoldText";
 import CharHighlight from "../components/CharHighlight";
+import ExamInstructions from "../components/ExamInstructions";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import TypingControlPanel from "../components/TypingControlPanel";
 import UserIdentityHeader from "../components/UserIdentityHeader";
+import { useAuth } from "../context/AuthContext";
 import { paragraphs as allParagraphs } from "../data/paragraphs";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import { usePassagesByExam, useSaveTypingResult } from "../hooks/useQueries";
@@ -41,6 +43,9 @@ export default function TypingPractice() {
   const { data: backendPassages } = usePassagesByExam(examCategory);
   const { mutate: saveResult } = useSaveTypingResult();
   const { identity } = useInternetIdentity();
+  const auth = useAuth();
+
+  const [instructionsDone, setInstructionsDone] = useState(false);
 
   // Control panel state
   const [selectedMinutes, setSelectedMinutes] = useState(5);
@@ -164,7 +169,10 @@ export default function TypingPractice() {
   };
 
   const handleSave = () => {
-    const userId = identity?.getPrincipal().toString() || "anonymous";
+    const userId =
+      identity?.getPrincipal().toString() ||
+      auth.currentUser?.id ||
+      "anonymous";
     saveResult(
       {
         wpm: BigInt(wpm()),
@@ -211,6 +219,23 @@ export default function TypingPractice() {
   ).length;
   const errorWordCount = typedWords.length - correctWordCount;
 
+  const displayName = auth.currentUser?.name || "Candidate";
+  const displayId =
+    auth.currentUser?.username ||
+    auth.currentUser?.id ||
+    identity?.getPrincipal().toString().slice(0, 12) ||
+    "GUEST";
+
+  if (!instructionsDone) {
+    return (
+      <ExamInstructions
+        examName={examCategory.replace(/-/g, " ").toUpperCase()}
+        examType="typing"
+        onReady={() => setInstructionsDone(true)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f5f5]">
       <Header />
@@ -239,8 +264,8 @@ export default function TypingPractice() {
           </div>
 
           <UserIdentityHeader
-            userId={identity?.getPrincipal().toString().slice(0, 12) || "GUEST"}
-            name={"Candidate"}
+            userId={displayId}
+            name={displayName}
             sessionName="Practice Session"
           />
 
@@ -316,9 +341,7 @@ export default function TypingPractice() {
             </div>
             <div className="bg-white rounded-lg border-2 border-[#DAA520] p-3 text-center">
               <div
-                className={`text-2xl font-bold ${
-                  timeLeft < 30 ? "text-red-600" : "text-orange-600"
-                }`}
+                className={`text-2xl font-bold ${timeLeft < 30 ? "text-red-600" : "text-orange-600"}`}
               >
                 {formatTime(timeLeft)}
               </div>

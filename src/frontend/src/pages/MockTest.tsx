@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useParams } from "@tanstack/react-router";
 import {
   CheckCircle,
   ChevronRight,
@@ -40,6 +41,11 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import TypingControlPanel from "../components/TypingControlPanel";
 import UserIdentityHeader from "../components/UserIdentityHeader";
+import NTAMCQInterface from "../components/exam/NTAMCQInterface";
+import SSCMCQInterface from "../components/exam/SSCMCQInterface";
+import TCSMCQInterface from "../components/exam/TCSMCQInterface";
+import { getExamConfig } from "../data/examConfig";
+import { getQuestionsForExam } from "../data/mcqQuestions";
 import { paragraphs as allParagraphs } from "../data/paragraphs";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import { usePassagesByExam, useSaveTypingResult } from "../hooks/useQueries";
@@ -106,9 +112,31 @@ type Phase =
   | "exam"
   | "result";
 
+const slugToExam: Record<string, string> = {
+  "ssc-cgl": "SSC CGL",
+  "ssc-chsl": "SSC CHSL",
+  "delhi-police-hcm": "Delhi Police HCM",
+  "railway-ntpc": "Railway NTPC",
+  dsssb: "DSSSB",
+  banking: "Banking",
+  pcs: "PCS",
+  "ssc-mts": "SSC MTS",
+  "state-level": "SSC CGL",
+  hartron: "SSC CGL",
+  deo: "SSC CGL",
+  "all-exam": "SSC CGL",
+  clerk: "DSSSB",
+  teaching: "SSC CGL",
+};
+
 export default function MockTest() {
-  const [exam, setExam] = useState("SSC CGL");
-  const [phase, setPhase] = useState<Phase>("select");
+  const params = useParams({ strict: false });
+  const examSlugParam = (params as Record<string, string>)?.examSlug;
+  const [exam, setExam] = useState(
+    examSlugParam ? slugToExam[examSlugParam] || "SSC CGL" : "SSC CGL",
+  );
+  const [phase, setPhase] = useState<Phase>(examSlugParam ? "login" : "select");
+  const [paraIndex, setParaIndex] = useState(0);
 
   // Login state
   const [rollNo, setRollNo] = useState("");
@@ -153,12 +181,13 @@ export default function MockTest() {
 
   const duration = selectedMinutes * 60;
 
-  // Pick passage: backend first, then built-in
+  // Pick passage: backend first, then built-in, cycle via paraIndex
+  const langParas = allParagraphs.filter((p) => p.language === paperLang);
   const builtInPara =
-    allParagraphs.find((p) => p.language === paperLang) || allParagraphs[0];
+    langParas[paraIndex % (langParas.length || 1)] || allParagraphs[0];
   const passage =
     passages && passages.length > 0
-      ? stripBold(passages[0].content)
+      ? stripBold(passages[paraIndex % passages.length].content)
       : stripBold(builtInPara.text);
   const passageChars = passage.split("");
   const textSizeClass = textSize === "large" ? "text-lg" : "text-sm";
@@ -766,6 +795,45 @@ export default function MockTest() {
   }
 
   if (phase === "exam") {
+    const examCfg = getExamConfig(examSlug);
+    const mcqQuestions = getQuestionsForExam(examSlug);
+    // MCQ-only exams render the appropriate portal interface
+    if (examCfg.mode === "mcq") {
+      if (examCfg.examType === "nta") {
+        return (
+          <NTAMCQInterface
+            examConfig={examCfg}
+            questions={mcqQuestions}
+            mode="mock"
+            candidateName={rollNo || "Candidate"}
+            rollNo={rollNo || "2024001"}
+            onComplete={() => setPhase("result")}
+          />
+        );
+      }
+      if (examCfg.examType === "railway") {
+        return (
+          <TCSMCQInterface
+            examConfig={examCfg}
+            questions={mcqQuestions}
+            mode="mock"
+            candidateName={rollNo || "Candidate"}
+            rollNo={rollNo || "2024001"}
+            onComplete={() => setPhase("result")}
+          />
+        );
+      }
+      return (
+        <SSCMCQInterface
+          examConfig={examCfg}
+          questions={mcqQuestions}
+          mode="mock"
+          candidateName={rollNo || "Candidate"}
+          rollNo={rollNo || "2024001"}
+          onComplete={() => setPhase("result")}
+        />
+      );
+    }
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
         {/* Exam top bar */}
@@ -1036,19 +1104,34 @@ export default function MockTest() {
               </Button>
               <Button
                 onClick={() => {
-                  setPhase("select");
                   setTyped("");
-                  setDeclared(false);
-                  setRollNo("");
-                  setPassword("");
-                  setExamStarted(false);
+                  setTimeLeft(duration);
                   setFinished(false);
+                  setExamStarted(false);
+                  setStartTime(null);
+                  setPhase("exam");
                 }}
                 variant="outline"
-                className="flex-1 border-[#DAA520] text-black hover:bg-amber-50"
+                className="flex-1 border-orange-500 text-orange-700 hover:bg-orange-50"
                 data-ocid="mock.secondary_button"
               >
-                Try Again
+                Try Again (Same Text)
+              </Button>
+              <Button
+                onClick={() => {
+                  setParaIndex((prev) => prev + 1);
+                  setTyped("");
+                  setTimeLeft(duration);
+                  setFinished(false);
+                  setExamStarted(false);
+                  setStartTime(null);
+                  setDeclared(false);
+                  setPhase("practice");
+                }}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                data-ocid="mock.primary_button"
+              >
+                Next Practice Test →
               </Button>
             </div>
           </div>
