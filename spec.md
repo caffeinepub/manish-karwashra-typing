@@ -1,35 +1,23 @@
 # Manish Karwashra Typing
 
 ## Current State
-- Full exam platform with Home, TypingPractice, MCQTest, MockTest, LiveTest pages
-- MCQ and Typing tests start directly without any instructions or confirmation step
-- No user login/auth system; user identity uses Internet Identity principal or shows "GUEST"
-- 4-button exam cards on Home (Typing, MCQ, Practice, Live)
-- SSC/TCS/NTA MCQ interfaces, ExamTypingInterface for real exam flow
+The app has a full typing exam platform with ExamTypingInterface.tsx (used by Practice/Mock/Exam tests) and TypingPractice.tsx page. The interface currently has a vertical stacked layout with control bar at top. The paragraphs.ts data file has 20+ paragraphs mainly focused on Haryana GK and India History.
 
 ## Requested Changes (Diff)
 
 ### Add
-- **ExamInstructions component**: Full-screen instructions screen shown before EVERY test (MCQ and Typing). Multi-page instructions in Hindi/English, language dropdown, keyboard dropdown, declaration checkbox, "I am ready to begin" button that activates after checkbox is checked.
-- **Auth system (localStorage-based)**: Login screen shown when user is not logged in. Register with Email OR choose random username + set password (min 6 chars). Login with email/username + password. Password reset via security question (3 preset questions). Password change option in a profile dropdown accessible from Header.
-- **AuthContext**: React context managing currentUser state, login, logout, register, resetPassword, changePassword. Stored in localStorage.
-- **LoginPage / AuthModal**: Full login/register/reset UI accessible globally.
+- 30 new typing paragraphs from Google Doc in categories: ssc-cgl, banking, railway, general (SSC CGL/CHSL Constitution, Economy, Fundamental Rights, Climate Change, Digital India, Women Empowerment, NEP 2020, Railways, Banking, Panchayati Raj, GST, Swachh Bharat, Ayushman Bharat, Make in India, Skill Development, Agriculture, Startups, Environment, Space, National Integration, RBI, Financial Inclusion, NPA, Digital Banking, Priority Sector, Basel Norms, MSMEs, etc.)
+- New category types: 'ssc-cgl' | 'banking' | 'railway' to the Paragraph interface
 
 ### Modify
-- **TypingPractice.tsx**: Add `instructionsDone` state; if false, render ExamInstructions component instead of the test. Pass exam name and language to instructions.
-- **MCQTest.tsx**: Same -- add `instructionsDone` gate before rendering SSC/TCS/NTA interface.
-- **Header.tsx**: Show logged-in user name/username + dropdown with "Change Password" and "Logout" options.
-- **App.tsx**: Wrap with AuthProvider; add a route guard -- if not logged in, redirect to /login.
-- **UserIdentityHeader.tsx**: Use logged-in user data (name, userId) instead of "GUEST".
+- ExamTypingInterface.tsx: Complete UI redesign to match screenshot - split layout with passage panel on left/top and typing area below, right sidebar with: Submit button, large timer display ("15:00 Time Left"), Font Size controls (A+ [number] A-), Settings panel with radio buttons for backspace mode (No backspace / Current word backspace / Full backspace), checkboxes for Highlight Word (Alt+h), Auto Scroll (Alt+s), Play Keyboard Sound, Highlighter Colour section with radio buttons (Black/Blue/Yellow). Top toolbar with "How to type this?" button on left, "Start" and "Full Screen(esc)" on right.
+- TypingPractice.tsx: Use the same new layout/settings approach consistent with the image reference
 
 ### Remove
 - Nothing removed
 
 ## Implementation Plan
-1. Create `src/frontend/src/context/AuthContext.tsx` with full localStorage-based auth (register, login, logout, resetPassword, changePassword). Users stored as JSON array in localStorage key `exam_users`.
-2. Create `src/frontend/src/pages/LoginPage.tsx` with tabs: Login / Register / Forgot Password. Register tab offers email OR random username + password. Forgot Password uses security question.
-3. Create `src/frontend/src/components/ExamInstructions.tsx` -- full-screen instructions with Hindi/English toggle, multi-point instruction list, keyboard dropdown, language dropdown, declaration checkbox, animated "I am ready" button.
-4. Update `App.tsx`: wrap with `<AuthProvider>`, add `/login` route, add redirect logic.
-5. Update `Header.tsx`: show user info + logout/change-password dropdown.
-6. Update `TypingPractice.tsx` and `MCQTest.tsx`: gate with `instructionsDone` state + `<ExamInstructions>` component.
-7. Update `UserIdentityHeader.tsx`: read user from auth context.
+1. Update src/frontend/src/data/paragraphs.ts - add 'ssc-cgl' | 'banking' | 'railway' to category type union, and append 30 new paragraphs from the Google Doc
+2. Redesign ExamTypingInterface.tsx to match the screenshot: two-column layout (main area left, settings panel right), top toolbar row, passage display box, typing input box, right panel with submit/timer/font-size/settings
+3. Update TypingPractice.tsx to use consistent layout where the passage + typing area matches the screenshot style
+4. Validate and build

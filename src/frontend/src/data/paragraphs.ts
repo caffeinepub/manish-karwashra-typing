@@ -11,7 +11,10 @@ export interface Paragraph {
     | "transport"
     | "entertainment"
     | "nature"
-    | "general";
+    | "general"
+    | "ssc-cgl"
+    | "banking"
+    | "railway";
   language: "Hindi" | "English";
   text: string;
 }
@@ -266,6 +269,49 @@ export const paragraphs: Paragraph[] = [
     category: "general",
     language: "Hindi",
     text: "भारत ने पिछले कुछ दशकों में अंतर्राष्ट्रीय खेलों में उल्लेखनीय सफलता हासिल की है। **क्रिकेट** भारत का सबसे लोकप्रिय खेल है। **कपिल देव** की कप्तानी में 1983 और **एमएस धोनी** की कप्तानी में 2011 में भारत ने **क्रिकेट विश्व कप** जीता। **2024 टी20 विश्व कप** भी भारत ने जीता। **सचिन तेंदुलकर** को 'क्रिकेट का भगवान' कहा जाता है। **नीरज चोपड़ा** ने **टोक्यो ओलम्पिक 2020** में भाला फेंक में स्वर्ण पदक जीता जो किसी भारतीय एथलीट का पहला ओलम्पिक स्वर्ण था। **पीवी सिंधु** बैडमिंटन में दो बार ओलम्पिक पदक जीत चुकी हैं। **विश्वनाथन आनंद** पाँच बार विश्व शतरंज चैंपियन रहे हैं। **2023 एशियाई खेलों** में भारत ने 107 पदक जीते। सरकार की **खेलो इंडिया** और **टॉप्स** योजनाएं खिलाड़ियों के विकास में महत्वपूर्ण भूमिका निभा रही हैं।",
+  },
+
+  {
+    id: 100,
+    title: "Indian Constitution - An Overview",
+    category: "ssc-cgl",
+    language: "English",
+    text: "The Constitution of India is the supreme law of the land, adopted on 26th November 1949 and came into effect on 26th January 1950. It is the longest written constitution in the world, originally containing 395 articles divided into 22 parts and 8 schedules. Dr. B.R. Ambedkar is widely regarded as the principal architect of this monumental document. The Constitution establishes India as a sovereign, socialist, secular, democratic republic, ensuring justice, liberty, equality, and fraternity for all its citizens. The Preamble serves as the guiding light, encapsulating the essence and philosophy of the constitutional framework. Fundamental Rights, enshrined in Part III, guarantee civil liberties to every citizen, protecting them from arbitrary state action. These rights include the right to equality, right to freedom, right against exploitation, right to freedom of religion, cultural and educational rights, and the right to constitutional remedies. Directive Principles of State Policy, though non-justiciable, provide the blueprint for governance and social welfare. The amending procedure under Article 368 allows the Constitution to evolve with changing times, reflecting its dynamic nature. Over the years, more than one hundred amendments have been made, addressing various social, economic, and political challenges. The Constitution also delineates the structure of the Union and State governments, the judiciary, and the intricate balance of power between them. It remains the bedrock of Indian democracy, ensuring stability and continuity while accommodating diversity and change.",
+  },
+  {
+    id: 101,
+    title: "Indian Economy and Economic Reforms",
+    category: "ssc-cgl",
+    language: "English",
+    text: "The Indian economy, prior to 1991, was characterized by protectionism, extensive regulation, and public sector dominance. The balance of payments crisis of 1991 served as a catalyst for transformative economic reforms. The government introduced the New Economic Policy, which encompassed liberalization, privatization, and globalization. Industrial licensing was dismantled, foreign direct investment was encouraged, and the public sector was opened to competition. These reforms unleashed the entrepreneurial spirit of the nation and propelled India onto a high-growth trajectory. The services sector emerged as a significant driver of economic expansion, with information technology, telecommunications, and financial services leading the way. The economic growth rate averaged around six to seven percent for over two decades, lifting millions out of poverty. However, challenges persist, including agricultural distress, unemployment, income inequality, and infrastructure deficits. The Goods and Services Tax, implemented in 2017, represented a landmark tax reform, unifying the nation into a single market and simplifying indirect taxation. The Insolvency and Bankruptcy Code provided a robust framework for resolving distressed assets and improving the ease of doing business. In recent years, the focus has shifted towards inclusive growth, digital transformation, and sustainable development. Initiatives such as Make in India, Digital India, and Startup India aim to foster innovation, create employment, and enhance manufacturing capabilities.",
+  },
+  {
+    id: 107,
+    title: "Indian Railways - The Lifeline of the Nation",
+    category: "railway",
+    language: "English",
+    text: "Indian Railways is one of the largest railway networks in the world, serving as the lifeline of the nation transportation infrastructure. With a route length exceeding sixty-seven thousand kilometers and over seven thousand stations, it operates more than thirteen thousand passenger trains daily, transporting approximately twenty-three million passengers. The history of Indian Railways dates back to 1853 when the first passenger train ran between Bombay and Thane. Over the years, the network has expanded to connect every corner of the country, from the snow-capped Himalayas to the coastal plains of the south. The railway system plays a vital role in freight transportation, moving essential commodities such as coal, cement, food grains, and petroleum products across the country. The electrification of railway lines has been progressing rapidly, with the goal of achieving one hundred percent electrification of the broad-gauge network. The introduction of modern trains such as the Vande Bharat Express, with its advanced safety features and passenger amenities, represents a significant technological leap. The Dedicated Freight Corridors, currently under construction, will enhance freight capacity and decongest the existing network. Indian Railways is also a significant employer, with over 1.2 million employees, making it one of the largest employers in the world. Railway recruitment boards conduct examinations regularly to fill vacancies in various categories including technical, non-technical, and ministerial posts.",
+  },
+  {
+    id: 108,
+    title: "Banking Sector in India - Structure and Reforms",
+    category: "banking",
+    language: "English",
+    text: "The banking sector in India has undergone remarkable transformation since nationalization in 1969 and 1980, which brought the majority of commercial banks under public ownership. The sector is broadly classified into scheduled commercial banks, which include public sector banks, private sector banks, foreign banks, regional rural banks, and cooperative banks. The Reserve Bank of India, established in 1935, serves as the central bank and regulator of the banking system, responsible for monetary policy, currency management, and financial stability. The banking sector reforms initiated in 1991, following the recommendations of the Narasimham Committee, introduced prudential norms, capital adequacy requirements, and enhanced supervision. The establishment of the Banking Ombudsman Scheme provided a mechanism for customer grievance redressal. The merger of public sector banks in recent years has created stronger, more resilient banking entities capable of competing in the global marketplace. Digital banking has witnessed exponential growth, with mobile banking, internet banking, and unified payments interface transforming how customers interact with banks. Financial inclusion initiatives, including the Pradhan Mantri Jan Dhan Yojana, have brought millions of unbanked individuals into the formal banking system. The introduction of new private sector banks has brought greater competition and innovation, benefiting customers with better products and services at competitive prices.",
+  },
+  {
+    id: 119,
+    title: "Reserve Bank of India - Functions and Role",
+    category: "banking",
+    language: "English",
+    text: "The Reserve Bank of India, established on April 1, 1935, under the Reserve Bank of India Act, 1934, serves as the central bank of the country. It was initially established as a shareholders bank and was nationalized in 1949. The Reserve Bank occupies a pivotal position in the Indian financial system, performing a wide range of functions that encompass monetary policy formulation, currency management, regulation and supervision of financial institutions, and development of the financial system. The primary objective of the Reserve Bank is to maintain price stability while keeping in mind the objective of growth. The Monetary Policy Committee, constituted under the Reserve Bank of India Act, determines the policy interest rates required to achieve the inflation target. The Reserve Bank manages the currency system, ensuring an adequate supply of clean notes and coins while combating counterfeiting. It acts as the banker to the government, managing the government banking transactions and public debt management. As banker to banks, it provides settlement services, lender of last resort facilities, and regulates the banking system. The Reserve Bank also plays a developmental role, promoting financial inclusion, financial literacy, and the development of robust payment and settlement systems.",
+  },
+  {
+    id: 123,
+    title: "Railway Recruitment and Career Opportunities",
+    category: "railway",
+    language: "English",
+    text: "Indian Railways offers diverse career opportunities through various recruitment boards across the country. The Railway Recruitment Board Non-Technical Popular Categories examination attracts millions of aspirants annually, offering positions in station master, goods guard, commercial apprentice, traffic apprentice, and junior time keeper roles. The selection process typically includes a computer-based test, physical efficiency test for certain posts, and document verification. The Group D recruitment covers positions such as track maintainer, helper in electrical, mechanical, and signal and telecommunication departments. Railway Protection Force and Railway Protection Special Force recruitments offer opportunities in security-related roles. The examination pattern includes questions on mathematics, general intelligence and reasoning, general science, and general awareness about current affairs. Candidates must meet specific age, educational, and physical fitness criteria depending on the post applied for. The railway service provides job security, various allowances, medical benefits, and opportunities for promotion and advancement. The pay scales for various railway posts are governed by the Central Pay Commission recommendations, providing competitive compensation and benefits to railway employees across all grades and categories.",
   },
 ];
 

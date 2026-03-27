@@ -10,10 +10,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Clock, Monitor, Square, User } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import BoldText, { stripBold } from "../BoldText";
-import CharHighlight from "../CharHighlight";
+import { stripBold } from "../BoldText";
 
 interface TypingPassage {
   text: string;
@@ -37,13 +36,16 @@ interface Props {
   }) => void;
 }
 
+type BackspaceMode = "none" | "word" | "full";
+type HighlightColor = "black" | "blue" | "yellow";
+
 export default function ExamTypingInterface({
   examName,
   passages,
   duration,
   backspaceAllowed = false,
-  candidateName = "Candidate",
-  rollNo = "2024001",
+  candidateName: _candidateName = "Candidate",
+  rollNo: _rollNo = "2024001",
   onComplete,
 }: Props) {
   const [passageIdx, setPassageIdx] = useState(0);
@@ -51,10 +53,16 @@ export default function ExamTypingInterface({
   const [timeLeft, setTimeLeft] = useState(duration);
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [textSize, setTextSize] = useState<"small" | "large">("small");
+  const [fontSize, setFontSize] = useState(16);
   const [highlightEnabled, setHighlightEnabled] = useState(true);
   const [autoScroll, setAutoScroll] = useState(false);
-  const [backspace, setBackspace] = useState(backspaceAllowed);
+  const [keyboardSound, setKeyboardSound] = useState(false);
+  const [backspaceMode, setBackspaceMode] = useState<BackspaceMode>(
+    backspaceAllowed ? "full" : "none",
+  );
+  const [highlightColor, setHighlightColor] = useState<HighlightColor>("black");
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const passageRef = useRef<HTMLDivElement>(null);
@@ -64,26 +72,28 @@ export default function ExamTypingInterface({
       ? passages[passageIdx % passages.length]
       : { text: "No passage available. Please add typing content." };
   const passageText = stripBold(passage.text);
-  const passageChars = passageText.split("");
-
-  const textSizeClass = textSize === "large" ? "text-lg" : "text-sm";
+  const passageWords = passageText.trim().split(/\s+/).filter(Boolean);
 
   const formatTime = (s: number) =>
-    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   const typedWords = typed.trim().split(/\s+/).filter(Boolean);
-  const passageWords = passageText.trim().split(/\s+/).filter(Boolean);
   const correctWords = typedWords.filter(
     (w, i) => w === passageWords[i],
   ).length;
   const wrongWords = typedWords.length - correctWords;
   const elapsed = duration - timeLeft;
   const wpm = elapsed > 0 ? Math.round((typedWords.length / elapsed) * 60) : 0;
-  const correct = typed
+  const correctChars = typed
     .split("")
-    .filter((c, i) => c === passageChars[i]).length;
+    .filter((c, i) => c === passageText[i]).length;
   const accuracy =
-    typed.length > 0 ? Math.round((correct / typed.length) * 100) : 0;
+    typed.length > 0 ? Math.round((correctChars / typed.length) * 100) : 0;
+
+  // Current word index in passage
+  const typedParts = typed.split(" ");
+  const currentWordIndex = typedParts.length - 1;
+  const currentWordTyped = typedParts[currentWordIndex] || "";
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
@@ -114,11 +124,11 @@ export default function ExamTypingInterface({
 
   useEffect(() => {
     if (autoScroll && passageRef.current) {
-      const spans = passageRef.current.querySelectorAll("span");
-      const curSpan = spans[typed.length];
+      const wordSpans = passageRef.current.querySelectorAll("[data-word]");
+      const curSpan = wordSpans[currentWordIndex];
       curSpan?.scrollIntoView({ block: "center", behavior: "smooth" });
     }
-  }, [typed, autoScroll]);
+  }, [currentWordIndex, autoScroll]);
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (finished) return;
@@ -127,10 +137,56 @@ export default function ExamTypingInterface({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!backspace && e.key === "Backspace") {
-      e.preventDefault();
+    if (e.key === "Backspace") {
+      if (backspaceMode === "none") {
+        e.preventDefault();
+      } else if (backspaceMode === "word") {
+        // Prevent backspace if would go back past start of current word (i.e., last char is space)
+        if (typed.length > 0 && typed[typed.length - 1] === " ") {
+          e.preventDefault();
+        }
+      }
+    }
+    // Keyboard shortcuts
+    if (e.altKey) {
+      if (e.key === "d") {
+        e.preventDefault();
+        setBackspaceMode("none");
+      }
+      if (e.key === "o") {
+        e.preventDefault();
+        setBackspaceMode("word");
+      }
+      if (e.key === "e") {
+        e.preventDefault();
+        setBackspaceMode("full");
+      }
+      if (e.key === "h") {
+        e.preventDefault();
+        setHighlightEnabled((h) => !h);
+      }
+      if (e.key === "s") {
+        e.preventDefault();
+        setAutoScroll((a) => !a);
+      }
     }
   };
+
+  const toggleFullScreen = () => {
+    if (!isFullScreen) {
+      document.documentElement.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+    setIsFullScreen((f) => !f);
+  };
+
+  // Highlight color class for current word box
+  const currentWordBg = {
+    black: "bg-black text-white",
+    blue: "bg-blue-700 text-white",
+    yellow: "bg-yellow-400 text-black",
+  }[highlightColor];
 
   if (finished) {
     return (
@@ -236,236 +292,154 @@ export default function ExamTypingInterface({
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-gray-50"
+      className="min-h-screen flex flex-col bg-gray-100"
       style={{ fontFamily: "system-ui, sans-serif" }}
     >
-      {/* Top Header */}
-      <div style={{ background: "#1a237e" }} className="text-white">
-        <div className="px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-3 text-sm">
-            <Monitor className="h-4 w-4" />
-            <span>System Node No: C001</span>
-            <span className="text-blue-300">|</span>
-            <span className="font-semibold">{examName}</span>
-          </div>
-          <div
-            className={`bg-red-600 text-white px-3 py-1 rounded font-mono font-bold text-lg flex items-center gap-1.5 ${
-              timeLeft < 60 ? "animate-pulse" : ""
-            }`}
-            data-ocid="typing.panel"
-          >
-            <Clock className="h-4 w-4" /> {formatTime(timeLeft)}
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <User className="h-4 w-4" />
-            <span className="font-medium">{candidateName}</span>
-            <span className="text-blue-300 text-xs">Roll: {rollNo}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Candidate Info Strip */}
-      <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-12 bg-gray-300 rounded flex items-center justify-center flex-shrink-0">
-            <User className="h-6 w-6 text-gray-500" />
-          </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-700">
-            <span>
-              <strong>Name:</strong> {candidateName}
-            </span>
-            <span>
-              <strong>Roll No:</strong> {rollNo}
-            </span>
-            <span>
-              <strong>Exam:</strong> {examName}
-            </span>
-            <span>
-              <strong>Date:</strong> {new Date().toLocaleDateString("en-IN")}
-            </span>
-            <span>
-              <strong>Session:</strong> Morning
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Control Bar */}
-      <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center flex-wrap gap-3">
-        <div className="flex gap-1">
+      {/* Top toolbar */}
+      <div className="bg-white border-b border-gray-300 px-3 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setTextSize("small")}
-            className={`px-2 py-1 text-xs rounded border ${
-              textSize === "small"
-                ? "bg-gray-800 text-white"
-                : "bg-white text-gray-600 border-gray-300"
-            }`}
-            data-ocid="typing.toggle"
+            className="px-3 py-1 text-xs border border-gray-400 rounded bg-gray-50 hover:bg-gray-100 text-gray-700"
           >
-            A-
+            How to type this?
+          </button>
+          <span className="text-xs text-gray-500 ml-2">{examName}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => textareaRef.current?.focus()}
+            className="px-3 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded"
+            data-ocid="typing.primary_button"
+          >
+            Start
           </button>
           <button
             type="button"
-            onClick={() => setTextSize("large")}
-            className={`px-2 py-1 text-sm rounded border ${
-              textSize === "large"
-                ? "bg-gray-800 text-white"
-                : "bg-white text-gray-600 border-gray-300"
-            }`}
-            data-ocid="typing.toggle"
+            onClick={toggleFullScreen}
+            className="px-3 py-1 text-xs border border-gray-400 rounded bg-gray-50 hover:bg-gray-100 text-gray-700"
           >
-            A+
+            {isFullScreen ? "Exit Full Screen" : "Full Screen (esc)"}
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setHighlightEnabled((h) => !h)}
-          className={`px-2 py-1 text-xs rounded border ${
-            highlightEnabled
-              ? "bg-yellow-400 text-yellow-900"
-              : "bg-white text-gray-600 border-gray-300"
-          }`}
-          data-ocid="typing.toggle"
-        >
-          Highlight {highlightEnabled ? "ON" : "OFF"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setAutoScroll((a) => !a)}
-          className={`px-2 py-1 text-xs rounded border ${
-            autoScroll
-              ? "bg-blue-500 text-white"
-              : "bg-white text-gray-600 border-gray-300"
-          }`}
-          data-ocid="typing.toggle"
-        >
-          {autoScroll ? "Auto Scroll" : "Manual Scroll"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setBackspace((b) => !b)}
-          className={`px-2 py-1 text-xs rounded border ${
-            backspace ? "bg-green-500 text-white" : "bg-red-500 text-white"
-          }`}
-          data-ocid="typing.toggle"
-        >
-          Backspace: {backspace ? "Allowed" : "Blocked"}
-        </button>
       </div>
 
-      {/* Stats Bar */}
-      <div className="bg-gray-100 border-b border-gray-200 px-4 py-2 flex gap-4 overflow-x-auto">
-        {[
-          ["WPM", wpm, "text-blue-600"],
-          ["Accuracy", `${accuracy}%`, "text-green-600"],
-          ["Keystrokes", typed.length, "text-gray-600"],
-          [
-            "Time Left",
-            formatTime(timeLeft),
-            timeLeft < 60 ? "text-red-600" : "text-orange-600",
-          ],
-          ["Errors", wrongWords, "text-red-500"],
-        ].map(([label, val, cls]) => (
-          <div key={label as string} className="text-center flex-shrink-0">
-            <div className={`text-base font-bold ${cls}`}>{val}</div>
-            <div className="text-xs text-gray-500">{label}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex-1 p-4">
-        <div className="max-w-5xl mx-auto flex flex-col gap-3">
-          {/* Passage Label */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 bg-[#DAA520] text-white px-2 py-0.5 rounded">
-              PASSAGE / अनुच्छेद
-            </span>
-            <span className="text-xs text-gray-400">
-              {passage.title || examName} — {passageText.split(/\s+/).length}{" "}
-              words
-            </span>
-          </div>
-
-          {/* Source Passage */}
+      {/* Main layout */}
+      <div className="flex flex-1 min-h-0">
+        {/* Left: passage + typing area */}
+        <div className="flex-1 flex flex-col p-3 gap-3 min-w-0">
+          {/* Passage box */}
           <div
             ref={passageRef}
-            className={`bg-white border-2 border-[#DAA520] rounded-xl p-4 font-mono ${textSizeClass} leading-9 select-none text-black overflow-auto max-h-56`}
+            className="bg-white border border-gray-300 rounded p-4 overflow-y-auto flex-1 min-h-0"
+            style={{
+              fontSize: `${fontSize}px`,
+              lineHeight: "2",
+              maxHeight: "calc(50vh - 60px)",
+              minHeight: "180px",
+              fontFamily: "monospace",
+              userSelect: "none",
+            }}
           >
             {highlightEnabled ? (
-              <CharHighlight chars={passageChars} typed={typed} />
-            ) : (
-              <BoldText text={passage.text} />
-            )}
-          </div>
-
-          {/* Typing Area Label */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold bg-gray-700 text-white px-2 py-0.5 rounded uppercase tracking-wider">
-              TYPE HERE / यहाँ टाइप करें
-            </span>
-            {!started && (
-              <span className="text-xs text-gray-400 animate-pulse">
-                Click here and start typing...
+              // Word-level highlight view
+              <span>
+                {passageWords.map((word, wIdx) => {
+                  let wordClass = "text-gray-700";
+                  if (wIdx < currentWordIndex) {
+                    // Already typed word
+                    wordClass =
+                      typedWords[wIdx] === word
+                        ? "text-gray-800"
+                        : "text-red-500 underline decoration-red-400";
+                  } else if (wIdx === currentWordIndex) {
+                    // Current word being typed - highlight it
+                    wordClass = `${currentWordBg} px-0.5 rounded`;
+                    // Show partial correctness within current word
+                    return (
+                      <span key={word + String(wIdx)}>
+                        <span
+                          data-word={wIdx}
+                          className={`${currentWordBg} rounded px-0.5`}
+                          style={{ fontFamily: "monospace" }}
+                        >
+                          {word.split("").map((ch, cIdx) => {
+                            if (cIdx < currentWordTyped.length) {
+                              const correct = ch === currentWordTyped[cIdx];
+                              return (
+                                <span
+                                  key={ch + String(cIdx)}
+                                  className={
+                                    correct ? "" : "text-red-300 line-through"
+                                  }
+                                >
+                                  {ch}
+                                </span>
+                              );
+                            }
+                            return <span key={ch + String(cIdx)}>{ch}</span>;
+                          })}
+                        </span>
+                        <span> </span>
+                      </span>
+                    );
+                  }
+                  return (
+                    <span key={word + String(wIdx)}>
+                      <span data-word={wIdx} className={wordClass}>
+                        {word}
+                      </span>
+                      <span> </span>
+                    </span>
+                  );
+                })}
               </span>
+            ) : (
+              <span className="text-gray-800">{passageText}</span>
             )}
           </div>
 
-          {/* Typing Area */}
-          <textarea
-            ref={textareaRef}
-            value={typed}
-            onChange={handleInput}
-            onKeyDown={handleKeyDown}
-            placeholder="Click here and start typing the passage above... / ऊपर दिए अनुच्छेद को यहाँ टाइप करें..."
-            className={`w-full border-2 border-[#DAA520] rounded-xl p-4 font-mono ${textSizeClass} leading-9 resize-none bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-400`}
-            style={{ height: "14rem" }}
-            data-ocid="typing.editor"
-          />
+          {/* Typing area */}
+          <div
+            className="bg-white border border-gray-300 rounded"
+            style={{ minHeight: "120px" }}
+          >
+            <textarea
+              ref={textareaRef}
+              value={typed}
+              onChange={handleInput}
+              onKeyDown={handleKeyDown}
+              placeholder="Click here and start typing the passage above..."
+              className="w-full h-full resize-none p-4 focus:outline-none focus:ring-1 focus:ring-blue-400 rounded"
+              style={{
+                fontSize: `${fontSize}px`,
+                lineHeight: "1.8",
+                fontFamily: "monospace",
+                minHeight: "120px",
+                background: "white",
+              }}
+              data-ocid="typing.editor"
+            />
+          </div>
+        </div>
 
-          {/* Bottom Buttons */}
-          <div className="flex gap-3">
+        {/* Right sidebar */}
+        <div
+          className="bg-white border-l border-gray-300 flex flex-col"
+          style={{ width: "220px", flexShrink: 0 }}
+        >
+          {/* Submit button */}
+          <div className="p-2 border-b border-gray-200">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="border-red-500 text-red-600 hover:bg-red-50"
-                  data-ocid="typing.secondary_button"
-                >
-                  <Square className="h-4 w-4 mr-1.5" /> Stop Test
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent data-ocid="typing.dialog">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Stop Test?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to stop the test? Your progress will
-                    be shown.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel data-ocid="typing.cancel_button">
-                    Continue
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleFinish}
-                    className="bg-red-600 hover:bg-red-700"
-                    data-ocid="typing.confirm_button"
-                  >
-                    Stop
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  className="bg-[#1a237e] hover:bg-blue-900 text-white flex-1"
+                <button
+                  type="button"
+                  className="w-full py-2 px-3 text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded"
                   data-ocid="typing.open_modal_button"
                 >
-                  Submit Test / परीक्षा सबमिट करें
-                </Button>
+                  Submit
+                </button>
               </AlertDialogTrigger>
               <AlertDialogContent data-ocid="typing.dialog">
                 <AlertDialogHeader>
@@ -481,7 +455,7 @@ export default function ExamTypingInterface({
                   </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleFinish}
-                    className="bg-[#1a237e]"
+                    className="bg-orange-500 hover:bg-orange-600"
                     data-ocid="typing.confirm_button"
                   >
                     Submit
@@ -489,6 +463,212 @@ export default function ExamTypingInterface({
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+          </div>
+
+          {/* Timer */}
+          <div className="p-3 border-b border-gray-200 text-center">
+            <div
+              className={`font-mono font-bold text-2xl leading-tight ${
+                timeLeft < 60 ? "text-red-600" : "text-gray-800"
+              }`}
+              data-ocid="typing.panel"
+            >
+              {formatTime(timeLeft)}
+            </div>
+            <div className="text-xs text-gray-500 mt-0.5">Time Left</div>
+          </div>
+
+          {/* Font Size */}
+          <div className="p-3 border-b border-gray-200">
+            <div className="text-xs text-gray-500 mb-2">Font Size</div>
+            <div className="flex items-center gap-1 justify-center">
+              <button
+                type="button"
+                onClick={() => setFontSize((s) => Math.min(s + 1, 22))}
+                className="px-2 py-1 text-xs font-bold bg-green-500 text-white rounded hover:bg-green-600"
+                data-ocid="typing.toggle"
+              >
+                A+
+              </button>
+              <span className="text-sm font-mono w-6 text-center">
+                {fontSize}
+              </span>
+              <button
+                type="button"
+                onClick={() => setFontSize((s) => Math.max(s - 1, 10))}
+                className="px-2 py-1 text-xs font-bold bg-red-500 text-white rounded hover:bg-red-600"
+                data-ocid="typing.toggle"
+              >
+                A-
+              </button>
+            </div>
+          </div>
+
+          {/* Settings */}
+          <div className="p-3 flex-1 overflow-y-auto">
+            <div className="text-xs font-semibold text-gray-500 mb-1">
+              Setting
+            </div>
+            <p className="text-xs italic text-red-500 mb-3 leading-tight">
+              This setting block is only For Practice Purpose, Not Available in
+              Exam.
+            </p>
+
+            {/* Backspace mode */}
+            <div className="mb-3">
+              <div className="text-xs text-gray-600 mb-1 font-medium">
+                Backspace mode:
+              </div>
+              {(
+                [
+                  ["none", "No backspace", "Alt+d"],
+                  ["word", "Current word backspace", "Alt+o"],
+                  ["full", "Full backspace", "Alt+e"],
+                ] as [BackspaceMode, string, string][]
+              ).map(([val, label, shortcut]) => (
+                <label
+                  key={val}
+                  className="flex items-center gap-1.5 mb-1 cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    name="backspace"
+                    value={val}
+                    checked={backspaceMode === val}
+                    onChange={() => setBackspaceMode(val)}
+                    className="w-3 h-3"
+                    data-ocid="typing.radio"
+                  />
+                  <span className="text-xs text-gray-700">
+                    {label}{" "}
+                    <span className="text-gray-400 text-[10px]">
+                      ({shortcut})
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            {/* Checkboxes */}
+            <div className="mb-3 space-y-1">
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={highlightEnabled}
+                  onChange={(e) => setHighlightEnabled(e.target.checked)}
+                  className="w-3 h-3"
+                  data-ocid="typing.checkbox"
+                />
+                <span className="text-xs text-gray-700">
+                  Highlight Word{" "}
+                  <span className="text-gray-400 text-[10px]">(Alt+h)</span>
+                </span>
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={autoScroll}
+                  onChange={(e) => setAutoScroll(e.target.checked)}
+                  className="w-3 h-3"
+                  data-ocid="typing.checkbox"
+                />
+                <span className="text-xs text-gray-700">
+                  Auto Scroll{" "}
+                  <span className="text-gray-400 text-[10px]">(Alt+s)</span>
+                </span>
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={keyboardSound}
+                  onChange={(e) => setKeyboardSound(e.target.checked)}
+                  className="w-3 h-3"
+                  data-ocid="typing.checkbox"
+                />
+                <span className="text-xs text-gray-700">
+                  Play Keyboard Sound
+                </span>
+              </label>
+            </div>
+
+            <div className="text-xs font-semibold text-gray-500 mb-1">
+              Setting
+            </div>
+            <div className="text-xs font-medium text-orange-600 mb-2">
+              Highlighter Colour
+            </div>
+
+            {/* Highlighter color */}
+            <div className="space-y-1">
+              {(["black", "blue", "yellow"] as HighlightColor[]).map(
+                (color) => (
+                  <label
+                    key={color}
+                    className="flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <input
+                      type="radio"
+                      name="highlightColor"
+                      value={color}
+                      checked={highlightColor === color}
+                      onChange={() => setHighlightColor(color)}
+                      className="w-3 h-3"
+                      data-ocid="typing.radio"
+                    />
+                    <span className="flex items-center gap-1 text-xs text-gray-700">
+                      <span
+                        className="inline-block w-3 h-3 rounded-sm border border-gray-400"
+                        style={{
+                          background:
+                            color === "black"
+                              ? "#000"
+                              : color === "blue"
+                                ? "#1d4ed8"
+                                : "#fbbf24",
+                        }}
+                      />
+                      {color.charAt(0).toUpperCase() + color.slice(1)}
+                    </span>
+                  </label>
+                ),
+              )}
+            </div>
+
+            {/* Stop button */}
+            <div className="mt-4">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full py-1.5 text-xs bg-red-100 text-red-700 border border-red-300 rounded hover:bg-red-200"
+                    data-ocid="typing.secondary_button"
+                  >
+                    Stop Test
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent data-ocid="typing.dialog">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Stop Test?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to stop the test? Your progress will
+                      be shown.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel data-ocid="typing.cancel_button">
+                      Continue
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleFinish}
+                      className="bg-red-600 hover:bg-red-700"
+                      data-ocid="typing.confirm_button"
+                    >
+                      Stop
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         </div>
       </div>

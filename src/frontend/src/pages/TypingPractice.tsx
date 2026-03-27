@@ -34,6 +34,9 @@ const CATEGORIES = [
   { value: "entertainment", label: "Entertainment" },
   { value: "nature", label: "Nature" },
   { value: "general", label: "General" },
+  { value: "ssc-cgl", label: "SSC CGL/CHSL" },
+  { value: "banking", label: "Banking" },
+  { value: "railway", label: "Railway NTPC" },
 ];
 
 export default function TypingPractice() {
