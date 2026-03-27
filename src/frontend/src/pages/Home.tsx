@@ -23,16 +23,78 @@ const EXAM_CARDS = [
 
 const LANGUAGES = ["हिंदी", "English", "All Language"];
 
+const QUICK_MENU = [
+  {
+    emoji: "⌨️",
+    label: "Start Typing Test",
+    path: "/typing-test",
+    bg: "bg-blue-600",
+  },
+  {
+    emoji: "📚",
+    label: "Practice Lessons",
+    path: "/practice",
+    bg: "bg-green-600",
+  },
+  {
+    emoji: "🏛️",
+    label: "Exam Typing Mode",
+    path: "/exam-mode",
+    bg: "bg-orange-600",
+  },
+  { emoji: "🎮", label: "Typing Games", path: "/games", bg: "bg-purple-600" },
+  {
+    emoji: "🎤",
+    label: "Dictation Mode",
+    path: "/dictation",
+    bg: "bg-pink-600",
+  },
+  {
+    emoji: "📊",
+    label: "Progress Report",
+    path: "/progress",
+    bg: "bg-teal-600",
+  },
+  {
+    emoji: "🏆",
+    label: "Leaderboard",
+    path: "/leaderboard",
+    bg: "bg-yellow-600",
+  },
+  {
+    emoji: "📅",
+    label: "Daily Challenge",
+    path: "/daily-challenge",
+    bg: "bg-red-600",
+  },
+  {
+    emoji: "🏅",
+    label: "Certificate / Result",
+    path: "/results",
+    bg: "bg-amber-600",
+  },
+  { emoji: "⚙️", label: "Settings", path: "/settings", bg: "bg-gray-600" },
+  {
+    emoji: "👤",
+    label: "Profile / Login",
+    path: "/profile",
+    bg: "bg-indigo-600",
+  },
+];
+
 export default function Home() {
   const [activeLang, setActiveLang] = useState("All Language");
   const router = useRouter();
 
-  const handleTyping = (examName: string) => {
+  const handleTypingNav = (examName: string) => {
     const slug = examName
       .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
-    router.navigate({ to: `/typing/${slug}` });
+    router.navigate({
+      to: "/typing/$examCategory",
+      params: { examCategory: slug },
+    });
   };
 
   const handleMCQ = (examName: string) => {
@@ -40,7 +102,10 @@ export default function Home() {
       .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
-    router.navigate({ to: `/mcq/${slug}` });
+    router.navigate({
+      to: "/mcq/$examCategory",
+      params: { examCategory: slug },
+    });
   };
 
   return (
@@ -95,80 +160,123 @@ export default function Home() {
       </section>
 
       {/* Live Test / Live Mock Section */}
-      <section
-        className="py-6 px-4"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(26,35,126,0.08) 0%, rgba(13,71,161,0.08) 100%)",
-        }}
-      >
-        <div className="max-w-2xl mx-auto">
+      <section className="py-4 px-4">
+        <div className="max-w-3xl mx-auto">
           <div
-            className="rounded-2xl border border-white/20 shadow-xl p-6"
+            className="rounded-2xl border border-gray-700 p-6"
             style={{
-              background:
-                "linear-gradient(135deg, rgba(30,41,59,0.75) 0%, rgba(15,23,42,0.85) 100%)",
+              background: "rgba(10, 15, 40, 0.82)",
               backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
             }}
           >
-            <h2 className="text-center text-white font-bold text-xl mb-5">
-              🖥️ Live Test / Live Mock
+            <h2 className="text-white text-xl font-bold mb-5 text-center tracking-wide">
+              🔴 Live Test / Live Mock
             </h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <button
                 type="button"
-                onClick={() => router.navigate({ to: "/live-test" })}
-                className="bg-red-600 hover:bg-red-700 text-white rounded-lg py-4 font-bold text-base w-full transition-colors"
-                data-ocid="feature.button"
+                onClick={() =>
+                  router.navigate({
+                    to: "/live-test/$examSlug",
+                    params: { examSlug: "ssc" },
+                  })
+                }
+                className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+                data-ocid="live.ssc.button"
               >
-                🔴 Live Test
+                🔴 SSC Live Test
               </button>
               <button
                 type="button"
                 onClick={() =>
                   router.navigate({
-                    to: "/typing/$examCategory",
-                    params: { examCategory: "all-exam" },
+                    to: "/live-test/$examSlug",
+                    params: { examSlug: "railway" },
                   })
                 }
-                className="bg-blue-700 hover:bg-blue-800 text-white rounded-lg py-4 font-bold text-base w-full transition-colors"
-                data-ocid="feature.button"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+                data-ocid="live.railway.button"
               >
-                🖥️ Typing Practice
+                🔵 Railway Live Test
               </button>
               <button
                 type="button"
-                onClick={() => router.navigate({ to: "/live-test" })}
-                className="bg-red-600 hover:bg-red-700 text-white rounded-lg py-4 font-bold text-base w-full transition-colors"
-                data-ocid="feature.button"
+                onClick={() =>
+                  router.navigate({
+                    to: "/mock-test/$examSlug",
+                    params: { examSlug: "banking" },
+                  })
+                }
+                className="bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+                data-ocid="live.banking.button"
               >
-                🔴 Live Test
+                🔵 Banking Mock
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  router.navigate({
+                    to: "/mock-test/$examSlug",
+                    params: { examSlug: "delhi-police" },
+                  })
+                }
+                className="bg-red-700 hover:bg-red-800 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+                data-ocid="live.delhi.button"
+              >
+                🔴 Delhi Police Mock
               </button>
               <button
                 type="button"
                 onClick={() => router.navigate({ to: "/learning" })}
-                className="bg-purple-700 hover:bg-purple-800 text-white rounded-lg py-4 font-bold text-base w-full transition-colors"
-                data-ocid="feature.button"
+                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+                data-ocid="live.pro_typing.button"
               >
                 📚 Pro Typing
               </button>
               <button
                 type="button"
-                onClick={() => router.navigate({ to: "/mock-test" })}
-                className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg py-4 font-bold text-base w-full transition-colors"
-                data-ocid="feature.button"
+                onClick={() =>
+                  router.navigate({
+                    to: "/mock-test/$examSlug",
+                    params: { examSlug: "state" },
+                  })
+                }
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+                data-ocid="live.state.button"
               >
-                📋 Mock Test
-              </button>
-              <button
-                type="button"
-                onClick={() => router.navigate({ to: "/learning" })}
-                className="bg-green-600 hover:bg-green-700 text-white rounded-lg py-4 font-bold text-base w-full transition-colors"
-                data-ocid="feature.button"
-              >
-                🎓 Learning Typing
+                🟢 State Mock
               </button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Access Menu */}
+      <section className="py-4 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex-1 h-px bg-gray-400" />
+            <h2 className="text-base font-bold text-gray-900 whitespace-nowrap">
+              🚀 Quick Access Menu
+            </h2>
+            <div className="flex-1 h-px bg-gray-400" />
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-3">
+            {QUICK_MENU.map((item, i) => (
+              <button
+                key={item.path}
+                type="button"
+                onClick={() => router.navigate({ to: item.path })}
+                className={`${item.bg} hover:opacity-90 text-white rounded-xl p-3 flex flex-col items-center gap-1.5 transition-all shadow hover:shadow-md hover:-translate-y-0.5`}
+                data-ocid={`quick.menu.${i + 1}`}
+              >
+                <span className="text-2xl">{item.emoji}</span>
+                <span className="text-[10px] font-semibold text-center leading-tight">
+                  {item.label}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       </section>
@@ -222,7 +330,7 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-1 w-full">
                   <button
                     type="button"
-                    onClick={() => handleTyping(card.name)}
+                    onClick={() => handleTypingNav(card.name)}
                     className="text-xs bg-red-600 text-white px-1 py-1 rounded hover:bg-red-700 transition-colors font-medium"
                     data-ocid={`exam.typing.button.${i + 1}`}
                   >
