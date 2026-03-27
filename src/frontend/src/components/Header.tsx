@@ -97,6 +97,13 @@ export default function Header() {
           >
             Live
           </Link>
+          <Link
+            to="/results"
+            className="text-sm text-gray-200 hover:text-orange-400 transition-colors"
+            data-ocid="nav.link"
+          >
+            Results
+          </Link>
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
@@ -199,6 +206,14 @@ export default function Header() {
             data-ocid="nav.link"
           >
             Live
+          </Link>
+          <Link
+            to="/results"
+            className="text-sm text-gray-200"
+            onClick={() => setMenuOpen(false)}
+            data-ocid="nav.link"
+          >
+            Results
           </Link>
           {auth.currentUser ? (
             <div className="flex flex-col gap-2">

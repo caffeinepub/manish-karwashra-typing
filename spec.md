@@ -1,33 +1,36 @@
-# Manish Karwashra Typing - Version 11
+# Manish Karwashra Typing
 
 ## Current State
-Fully functional exam simulation platform with typing practice, MCQ tests, login, instructions flow, and 20+ built-in paragraphs. CharHighlight does char-by-char comparison causing entire paragraph to show wrong when a word is skipped.
+- MCQ question bank has ~50-60 questions across 4 categories (SSC, Railway, CTET, Banking)
+- `getQuestionsForExam()` returns fixed question arrays - same questions every time
+- No randomization - tests feel repetitive
+- No admin panel for bulk question import
 
 ## Requested Changes (Diff)
 
 ### Add
-- 100 new English paragraphs from Google Doc (IDs 201-300) covering SSC CGL, Banking, Railway, Delhi Police, Teaching, State, General categories
-- New paragraph categories: ssc-cgl, banking, railway, delhi-police, teaching, state (add to category filter)
-- Certificate component (TypingCertificate / MCQCertificate) shown after qualifying a test
-- Download certificate as PNG/PDF using browser print or html2canvas
-- Certificate contains: candidate name, exam name, score/WPM, accuracy, date, decorative border
-- Qualifying criteria: Typing >= 30 WPM AND >= 80% accuracy; MCQ >= 60% score
+- 500+ MCQ questions organized by category (SSC, Railway, Banking, CTET, HSSC/Haryana GK, Computer/IT)
+- Question randomization: each test picks a random subset based on exam's totalQuestions
+- Admin Panel page (`/admin`) with bulk question import via JSON paste
+- Admin panel shows question count per category, allows adding questions in bulk JSON format
 
 ### Modify
-- paragraphs.ts: append 100 new paragraphs, add new category types
-- CharHighlight.tsx: rewrite to use word-aware comparison - when space is typed, snap to next word boundary so skipped words show as wrong but subsequent words align correctly
-- TypingPractice.tsx: show certificate after qualifying test completion
-- MCQTest.tsx: show certificate after qualifying score
-- CATEGORIES list in TypingPractice.tsx: add new category entries
+- `src/frontend/src/data/mcqQuestions.ts` - expand question bank massively, add randomization in `getQuestionsForExam`
+- Split large question sets into category files under `src/frontend/src/data/questions/`
+- `src/frontend/src/App.tsx` - add `/admin` route
 
 ### Remove
 - Nothing removed
 
 ## Implementation Plan
-1. Update Paragraph category type in paragraphs.ts to include new categories
-2. Append 100 paragraphs to paragraphs.ts
-3. Rewrite CharHighlight to use word-level alignment
-4. Create Certificate component with download button
-5. Integrate certificate in TypingPractice result screen (if WPM >= 30 && accuracy >= 80)
-6. Integrate certificate in MCQTest result screen (if score >= 60%)
-7. Update CATEGORIES array in TypingPractice
+1. Create question category files:
+   - `data/questions/ssc.ts` - 100+ questions (GK, Reasoning, Math, English, Haryana GK)
+   - `data/questions/railway.ts` - 80+ questions (Railway GK, Math, Reasoning, Current Affairs)
+   - `data/questions/banking.ts` - 80+ questions (Banking Awareness, Quant, Reasoning, English)
+   - `data/questions/ctet.ts` - 80+ questions (Child Dev, Pedagogy, Language, Math, EVS)
+   - `data/questions/haryana.ts` - 80+ questions (Haryana GK, History, Geography, Polity)
+   - `data/questions/computer.ts` - 80+ questions (MS Office, Computer Basics, Internet, Networking)
+2. Update `mcqQuestions.ts` to import from all category files, add `getRandomQuestionsForExam()` that returns shuffled subset
+3. Create `src/frontend/src/pages/AdminPanel.tsx` - question manager with JSON import
+4. Add `/admin` route in `App.tsx`
+5. Validate and build

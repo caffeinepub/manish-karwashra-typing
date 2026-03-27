@@ -2,12 +2,14 @@ import { Toaster } from "@/components/ui/sonner";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { createRootRoute, createRoute, redirect } from "@tanstack/react-router";
 import { AuthProvider } from "./context/AuthContext";
+import AdminPanel from "./pages/AdminPanel";
 import Home from "./pages/Home";
 import LearningTyping from "./pages/LearningTyping";
 import LiveTest from "./pages/LiveTest";
 import LoginPage from "./pages/LoginPage";
 import MCQTest from "./pages/MCQTest";
 import MockTest from "./pages/MockTest";
+import ResultsHistory from "./pages/ResultsHistory";
 import TypingPractice from "./pages/TypingPractice";
 
 function isLoggedIn(): boolean {
@@ -98,6 +100,21 @@ const learningRoute = createRoute({
   component: LearningTyping,
 });
 
+const resultsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/results",
+  beforeLoad: () => {
+    if (!isLoggedIn()) throw redirect({ to: "/login" });
+  },
+  component: ResultsHistory,
+});
+
+const adminRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin",
+  component: AdminPanel,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   indexRoute,
@@ -108,6 +125,8 @@ const routeTree = rootRoute.addChildren([
   mockTestRoute,
   mockTestExamRoute,
   learningRoute,
+  resultsRoute,
+  adminRoute,
 ]);
 
 const router = createRouter({ routeTree });

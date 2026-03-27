@@ -71,6 +71,19 @@ export default function TCSMCQInterface({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-submit when all questions are answered
+  useEffect(() => {
+    if (
+      !submitted &&
+      Object.keys(answers).length === questions.length &&
+      questions.length > 0
+    ) {
+      const timer = setTimeout(() => handleSubmit(), 800);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answers, submitted, questions.length]);
+
   const formatTime = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 

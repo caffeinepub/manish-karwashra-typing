@@ -130,6 +130,20 @@ export default function ExamTypingInterface({
     }
   }, [currentWordIndex, autoScroll]);
 
+  // Auto-finish when all words are typed
+  useEffect(() => {
+    if (
+      !finished &&
+      started &&
+      passageWords.length > 0 &&
+      typedWords.length >= passageWords.length
+    ) {
+      const timer = setTimeout(() => handleFinish(), 500);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typedWords.length, passageWords.length, finished, started, handleFinish]);
+
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (finished) return;
     if (!started) setStarted(true);

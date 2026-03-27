@@ -1,4 +1,10 @@
 import type { MCQQuestion } from "../backend";
+import { BANKING_FULL } from "./questions/banking";
+import { COMPUTER_FULL } from "./questions/computer";
+import { CTET_FULL } from "./questions/ctet";
+import { HARYANA_FULL } from "./questions/haryana";
+import { RAILWAY_FULL } from "./questions/railway";
+import { SSC_FULL } from "./questions/ssc";
 
 let _id = 1;
 const mkQ = (
@@ -23,575 +29,115 @@ const mkQ = (
   correctAnswer: BigInt(correct),
 });
 
-export const SSC_QUESTIONS: MCQQuestion[] = [
-  // General Awareness / Haryana GK
-  mkQ(
-    "ssc",
-    "What is the capital of Haryana?",
-    "हरियाणा की राजधानी क्या है?",
-    "Ambala",
-    "Chandigarh",
-    "Hisar",
-    "Karnal",
-    2,
-  ),
-  mkQ(
-    "ssc",
-    "Haryana was carved out of Punjab on which date?",
-    "हरियाणा की स्थापना किस दिन हुई?",
-    "1 November 1966",
-    "15 August 1947",
-    "26 January 1950",
-    "1 November 1960",
-    1,
-  ),
-  mkQ(
-    "ssc",
-    "Who is known as 'Haryana Kesari'?",
-    "'हरियाणा केसरी' के नाम से कौन जाना जाता है?",
-    "Lal Bahadur Shastri",
-    "Chaudhary Bansi Lal",
-    "Pandit Neki Ram Sharma",
-    "Devi Lal",
-    3,
-  ),
-  mkQ(
-    "ssc",
-    "Surajkund Craft Mela is held in which district?",
-    "सूरजकुंड शिल्प मेला किस जिले में होता है?",
-    "Hisar",
-    "Gurugram",
-    "Faridabad",
-    "Sonipat",
-    3,
-  ),
-  mkQ(
-    "ssc",
-    "What is the state animal of Haryana?",
-    "हरियाणा का राज्य पशु क्या है?",
-    "Tiger",
-    "Lion",
-    "Blackbuck",
-    "Elephant",
-    3,
-  ),
-  // India History
-  mkQ(
-    "ssc",
-    "Who gave the slogan 'Jai Jawan Jai Kisan'?",
-    "'जय जवान जय किसान' का नारा किसने दिया?",
-    "Mahatma Gandhi",
-    "Jawaharlal Nehru",
-    "Lal Bahadur Shastri",
-    "Indira Gandhi",
-    3,
-  ),
-  mkQ(
-    "ssc",
-    "The Quit India Movement was launched in which year?",
-    "भारत छोड़ो आंदोलन किस वर्ष शुरू हुआ?",
-    "1940",
-    "1942",
-    "1944",
-    "1945",
-    2,
-  ),
-  mkQ(
-    "ssc",
-    "Where was the first session of the Indian National Congress held?",
-    "भारतीय राष्ट्रीय कांग्रेस का पहला अधिवेशन कहाँ हुआ?",
-    "Calcutta",
-    "Bombay",
-    "Madras",
-    "Delhi",
-    2,
-  ),
-  // Maths
-  mkQ(
-    "ssc",
-    "A train covers 240 km in 4 hours. What is its speed in km/h?",
-    "एक ट्रेन 4 घंटे में 240 किमी चलती है। गति क्या है?",
-    "40",
-    "50",
-    "60",
-    "70",
-    3,
-    "Bilingual",
-  ),
-  mkQ(
-    "ssc",
-    "What is 15% of 500?",
-    "500 का 15% क्या है?",
-    "60",
-    "70",
-    "75",
-    "80",
-    3,
-  ),
-  mkQ(
-    "ssc",
-    "Simple Interest on Rs.2000 at 10% per annum for 3 years?",
-    "2000 रुपये पर 10% वार्षिक दर से 3 वर्षों का साधारण ब्याज?",
-    "Rs.500",
-    "Rs.600",
-    "Rs.700",
-    "Rs.800",
-    2,
-  ),
-  mkQ(
-    "ssc",
-    "If profit is 20% of cost price, what is profit % on selling price?",
-    "यदि लाभ क्रय मूल्य का 20% है, तो विक्रय मूल्य पर लाभ%?",
-    "16.67%",
-    "20%",
-    "25%",
-    "12%",
-    1,
-  ),
-  // English
-  mkQ(
-    "ssc",
-    "Choose the synonym of 'Benevolent'.",
-    "'Benevolent' का समानार्थी चुनें।",
-    "Cruel",
-    "Kind",
-    "Lazy",
-    "Brave",
-    2,
-    "English",
-  ),
-  mkQ(
-    "ssc",
-    "Choose the antonym of 'Abundant'.",
-    "'Abundant' का विलोम चुनें।",
-    "Plentiful",
-    "Scarce",
-    "Rich",
-    "Large",
-    2,
-    "English",
-  ),
-  mkQ(
-    "ssc",
-    "Fill in the blank: She ______ to school every day.",
-    "रिक्त स्थान भरें: She ______ to school every day.",
-    "go",
-    "goes",
-    "gone",
-    "going",
-    2,
-    "English",
-  ),
-  // Reasoning
-  mkQ(
-    "ssc",
-    "Complete the series: 2, 6, 12, 20, ?",
-    "श्रृंखला पूरी करें: 2, 6, 12, 20, ?",
-    "28",
-    "30",
-    "32",
-    "36",
-    2,
-  ),
-  mkQ(
-    "ssc",
-    "If CAT = 3120, then DOG = ?",
-    "यदि CAT = 3120 है, तो DOG = ?",
-    "4157",
-    "4158",
-    "4159",
-    "4160",
-    1,
-  ),
-  mkQ(
-    "ssc",
-    "Find the odd one out: Apple, Mango, Carrot, Banana.",
-    "बेजोड़ चुनें: Apple, Mango, Carrot, Banana.",
-    "Apple",
-    "Mango",
-    "Carrot",
-    "Banana",
-    3,
-  ),
-];
+// Legacy small sets (kept for backward compatibility)
+export const SSC_QUESTIONS: MCQQuestion[] = SSC_FULL;
+export const RAILWAY_QUESTIONS: MCQQuestion[] = RAILWAY_FULL;
+export const NTA_CTET_QUESTIONS: MCQQuestion[] = CTET_FULL;
+export const BANKING_QUESTIONS: MCQQuestion[] = BANKING_FULL;
+export const COMPUTER_QUESTIONS: MCQQuestion[] = COMPUTER_FULL;
+export const HARYANA_QUESTIONS: MCQQuestion[] = HARYANA_FULL;
 
-export const RAILWAY_QUESTIONS: MCQQuestion[] = [
-  mkQ(
-    "railway",
-    "Indian Railways was nationalised in which year?",
-    "भारतीय रेलवे का राष्ट्रीयकरण किस वर्ष हुआ?",
-    "1947",
-    "1950",
-    "1951",
-    "1953",
-    3,
-  ),
-  mkQ(
-    "railway",
-    "Which is the longest railway platform in India?",
-    "भारत का सबसे लंबा रेलवे प्लेटफॉर्म कौन सा है?",
-    "Gorakhpur",
-    "Kharagpur",
-    "Surat",
-    "Lucknow",
-    1,
-  ),
-  mkQ(
-    "railway",
-    "Vande Bharat Express is also known as?",
-    "वंदे भारत एक्सप्रेस को अन्य किस नाम से जाना जाता है?",
-    "Train 17",
-    "Train 18",
-    "Train 19",
-    "Train 20",
-    2,
-  ),
-  mkQ(
-    "railway",
-    "Which zone of Indian Railways has its HQ in Mumbai?",
-    "किस रेलवे जोन का मुख्यालय मुंबई में है?",
-    "Central Railway",
-    "Western Railway",
-    "Both A and B",
-    "Southern Railway",
-    3,
-  ),
-  mkQ(
-    "railway",
-    "RITES stands for?",
-    "RITES का पूर्ण रूप?",
-    "Rail India Technical & Economic Service",
-    "Railway India Technical & Economic Service",
-    "Rail India Technology & Engineering Service",
-    "Railway India Technology & Engineering",
-    1,
-  ),
-  mkQ(
-    "railway",
-    "Fastest train in India (2024)?",
-    "भारत की सबसे तेज़ ट्रेन (2024)?",
-    "Rajdhani Express",
-    "Shatabdi Express",
-    "Vande Bharat Express",
-    "Duronto Express",
-    3,
-  ),
-  mkQ(
-    "railway",
-    "Metro rail was first started in India in which city?",
-    "भारत में मेट्रो रेल सबसे पहले किस शहर में शुरू हुई?",
-    "Delhi",
-    "Mumbai",
-    "Kolkata",
-    "Chennai",
-    3,
-  ),
-  mkQ(
-    "railway",
-    "What does the 'B' stand for in IRCTC?",
-    "IRCTC में 'C' का मतलब?",
-    "Catering",
-    "Commerce",
-    "Company",
-    "Central",
-    1,
-  ),
-  mkQ(
-    "railway",
-    "G20 Summit 2023 was held in?",
-    "G20 शिखर सम्मेलन 2023 कहाँ हुआ?",
-    "Mumbai",
-    "New Delhi",
-    "Bengaluru",
-    "Hyderabad",
-    2,
-  ),
-  mkQ(
-    "railway",
-    "Amrit Bharat Station Scheme is related to?",
-    "अमृत भारत स्टेशन योजना किससे संबंधित है?",
-    "Highways",
-    "Airports",
-    "Railway Stations",
-    "Ports",
-    3,
-  ),
-  mkQ(
-    "railway",
-    "Complete the series: 4, 9, 16, 25, ?",
-    "श्रृंखला: 4, 9, 16, 25, ?",
-    "34",
-    "36",
-    "38",
-    "40",
-    2,
-  ),
-  mkQ(
-    "railway",
-    "What is 20% of 1500?",
-    "1500 का 20% क्या है?",
-    "250",
-    "300",
-    "350",
-    "400",
-    2,
-  ),
-];
-
-export const NTA_CTET_QUESTIONS: MCQQuestion[] = [
-  // Child Development & Pedagogy
-  mkQ(
-    "ctet",
-    "Who gave the theory of 'Zone of Proximal Development'?",
-    "'समीपस्थ विकास का क्षेत्र' सिद्धांत किसने दिया?",
-    "Piaget",
-    "Vygotsky",
-    "Kohlberg",
-    "Bruner",
-    2,
-  ),
-  mkQ(
-    "ctet",
-    "Constructivism in education means?",
-    "शिक्षा में रचनावाद का अर्थ है?",
-    "Teacher-centered learning",
-    "Rote memorization",
-    "Active knowledge construction by learner",
-    "None of the above",
-    3,
-  ),
-  mkQ(
-    "ctet",
-    "According to Piaget, the Concrete Operational stage is from age?",
-    "पियाजे के अनुसार मूर्त संक्रियात्मक अवस्था किस उम्र में होती है?",
-    "0-2 years",
-    "2-7 years",
-    "7-11 years",
-    "12+ years",
-    3,
-  ),
-  mkQ(
-    "ctet",
-    "NCF 2005 stands for?",
-    "NCF 2005 का पूर्ण रूप?",
-    "National Curriculum Framework",
-    "National Children Framework",
-    "National Core Framework",
-    "New Curriculum Framework",
-    1,
-  ),
-  mkQ(
-    "ctet",
-    "Right to Education Act (RTE) mandates free education for children aged?",
-    "आरटीई अधिनियम के तहत नि:शुल्क शिक्षा का अधिकार किस आयु तक?",
-    "5-14 years",
-    "6-14 years",
-    "6-16 years",
-    "5-16 years",
-    2,
-  ),
-  // Language (Hindi)
-  mkQ(
-    "ctet",
-    "'रामचरितमानस' किसने लिखी?",
-    "Who wrote 'Ramcharitmanas'?",
-    "Surdas",
-    "Kabirdas",
-    "Tulsidas",
-    "Mirabai",
-    3,
-  ),
-  mkQ(
-    "ctet",
-    "हिंदी की लिपि क्या है?",
-    "What is the script of Hindi?",
-    "Roman",
-    "Persian",
-    "Devanagari",
-    "Brahmi",
-    3,
-  ),
-  mkQ(
-    "ctet",
-    "संज्ञा के कितने भेद होते हैं?",
-    "How many types of Sangya (Noun) are there in Hindi?",
-    "3",
-    "4",
-    "5",
-    "6",
-    3,
-  ),
-  // Maths
-  mkQ(
-    "ctet",
-    "Which of the following is a prime number?",
-    "निम्न में से कौन-सी अभाज्य संख्या है?",
-    "15",
-    "21",
-    "17",
-    "27",
-    3,
-  ),
-  mkQ(
-    "ctet",
-    "LCM of 12 and 18 is?",
-    "12 और 18 का LCM क्या है?",
-    "6",
-    "24",
-    "36",
-    "72",
-    3,
-  ),
-  // EVS
-  mkQ(
-    "ctet",
-    "Which planet is known as the Red Planet?",
-    "किस ग्रह को लाल ग्रह कहते हैं?",
-    "Venus",
-    "Jupiter",
-    "Mars",
-    "Saturn",
-    3,
-  ),
-  mkQ(
-    "ctet",
-    "COVID-19 is caused by?",
-    "COVID-19 किसके कारण होता है?",
-    "Bacteria",
-    "Fungus",
-    "Coronavirus",
-    "Protozoa",
-    3,
-  ),
-];
-
-export const BANKING_QUESTIONS: MCQQuestion[] = [
-  mkQ(
-    "banking",
-    "RBI was established in which year?",
-    "RBI की स्थापना किस वर्ष हुई?",
-    "1934",
-    "1935",
-    "1947",
-    "1950",
-    2,
-  ),
-  mkQ(
-    "banking",
-    "Full form of NEFT?",
-    "NEFT का पूर्ण रूप?",
-    "National Electronic Funds Transfer",
-    "National Economic Funds Transfer",
-    "New Electronic Funds Transfer",
-    "None",
-    1,
-  ),
-  mkQ(
-    "banking",
-    "Which is the largest bank in India?",
-    "भारत का सबसे बड़ा बैंक कौन सा है?",
-    "PNB",
-    "HDFC",
-    "SBI",
-    "ICICI",
-    3,
-  ),
-  mkQ(
-    "banking",
-    "Repo Rate is the rate at which?",
-    "रेपो रेट वह दर है जिस पर?",
-    "RBI borrows from banks",
-    "Banks borrow from RBI",
-    "Banks lend to public",
-    "Govt borrows from RBI",
-    2,
-  ),
-  mkQ(
-    "banking",
-    "If A can do a work in 10 days and B in 15 days, together they finish in?",
-    "A 10 दिन में और B 15 दिन में काम करता है, साथ मिलकर कितने दिन में?",
-    "4 days",
-    "5 days",
-    "6 days",
-    "7 days",
-    3,
-  ),
-  mkQ(
-    "banking",
-    "A sum doubles in 8 years at SI. Rate of interest is?",
-    "8 वर्षों में साधारण ब्याज से राशि दोगुनी होती है। ब्याज दर?",
-    "10%",
-    "12%",
-    "12.5%",
-    "15%",
-    3,
-  ),
-  mkQ(
-    "banking",
-    "Choose the synonym of 'Affluent'.",
-    "'Affluent' का समानार्थी?",
-    "Poor",
-    "Wealthy",
-    "Honest",
-    "Brave",
-    2,
-    "English",
-  ),
-  mkQ(
-    "banking",
-    "Direction: If you face North and turn 90° clockwise, you face?",
-    "यदि आप उत्तर की ओर हैं और 90° दक्षिणावर्त मुड़ते हैं, तो आप किस दिशा में हैं?",
-    "South",
-    "North",
-    "East",
-    "West",
-    3,
-  ),
-  mkQ(
-    "banking",
-    "UPI was launched in India in which year?",
-    "भारत में UPI कब लॉन्च हुई?",
-    "2014",
-    "2015",
-    "2016",
-    "2017",
-    3,
-  ),
-  mkQ(
-    "banking",
-    "Which country hosted G20 Summit 2023?",
-    "G20 शिखर सम्मेलन 2023 किस देश ने आयोजित किया?",
-    "USA",
-    "China",
-    "India",
-    "Japan",
-    3,
-  ),
+export const ALL_QUESTIONS: MCQQuestion[] = [
+  ...SSC_FULL,
+  ...RAILWAY_FULL,
+  ...CTET_FULL,
+  ...BANKING_FULL,
+  ...COMPUTER_FULL,
+  ...HARYANA_FULL,
 ];
 
 export const GENERAL_QUESTIONS: MCQQuestion[] = [
-  ...SSC_QUESTIONS.slice(0, 5),
-  ...RAILWAY_QUESTIONS.slice(0, 5),
-  ...BANKING_QUESTIONS.slice(0, 5),
+  ...SSC_FULL.slice(0, 8),
+  ...RAILWAY_FULL.slice(0, 5),
+  ...BANKING_FULL.slice(0, 5),
+  ...COMPUTER_FULL.slice(0, 5),
+  ...HARYANA_FULL.slice(0, 7),
 ];
 
+// Utility: shuffle an array using Fisher-Yates
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Get custom questions from admin panel (localStorage)
+function getAdminQuestions(): MCQQuestion[] {
+  try {
+    const stored = localStorage.getItem("admin_mcq_questions");
+    if (!stored) return [];
+    const parsed = JSON.parse(stored) as MCQQuestion[];
+    return parsed.map((q) => ({
+      ...q,
+      id: BigInt(q.id as unknown as string),
+      correctAnswer: BigInt(q.correctAnswer as unknown as string),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export function getQuestionsForExam(examId: string): MCQQuestion[] {
-  if (examId.includes("railway") || examId.includes("ntpc"))
-    return RAILWAY_QUESTIONS;
-  if (examId.includes("ctet") || examId.includes("nta"))
-    return NTA_CTET_QUESTIONS;
-  if (
+  const adminQs = getAdminQuestions().filter(
+    (q) =>
+      !q.examCategory || q.examCategory === examId || q.examCategory === "all",
+  );
+
+  let pool: MCQQuestion[];
+
+  if (examId.includes("railway") || examId.includes("ntpc")) {
+    pool = [...RAILWAY_FULL, ...SSC_FULL.slice(20, 40)];
+  } else if (
+    examId.includes("ctet") ||
+    examId.includes("nta") ||
+    examId.includes("teaching")
+  ) {
+    pool = CTET_FULL;
+  } else if (
     examId.includes("banking") ||
     examId.includes("ibps") ||
     examId.includes("sbi")
-  )
-    return BANKING_QUESTIONS;
-  if (
-    examId.includes("ssc") ||
-    examId.includes("hssc") ||
-    examId.includes("delhi") ||
-    examId.includes("dsssb")
-  )
-    return SSC_QUESTIONS;
-  return GENERAL_QUESTIONS;
+  ) {
+    pool = [...BANKING_FULL, ...SSC_FULL.slice(20, 35)];
+  } else if (examId.includes("hssc") || examId.includes("haryana")) {
+    pool = [...HARYANA_FULL, ...SSC_FULL.slice(0, 20)];
+  } else if (
+    examId.includes("hartron") ||
+    examId.includes("deo") ||
+    examId.includes("computer")
+  ) {
+    pool = COMPUTER_FULL;
+  } else if (examId.includes("dsssb") || examId.includes("delhi")) {
+    pool = [...SSC_FULL, ...COMPUTER_FULL.slice(0, 20)];
+  } else {
+    // SSC CGL, CHSL, MTS and generic
+    pool = SSC_FULL;
+  }
+
+  // Mix in admin questions
+  pool = [...adminQs, ...pool];
+
+  // Return shuffled pool (unlimited - fresh questions each time)
+  return shuffle(pool);
 }
+
+// Export question counts for Admin Panel
+export function getQuestionStats() {
+  return {
+    SSC: SSC_FULL.length,
+    Railway: RAILWAY_FULL.length,
+    Banking: BANKING_FULL.length,
+    CTET: CTET_FULL.length,
+    Computer: COMPUTER_FULL.length,
+    HaryanaGK: HARYANA_FULL.length,
+    Total: ALL_QUESTIONS.length,
+    Admin: getAdminQuestions().length,
+  };
+}
+
+// For legacy usage
+const _mkQ = mkQ;
+export { _mkQ as mkQ };

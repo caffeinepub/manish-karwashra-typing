@@ -86,6 +86,19 @@ export default function SSCMCQInterface({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-submit when all questions are answered
+  useEffect(() => {
+    if (
+      !submitted &&
+      Object.keys(answers).length === questions.length &&
+      questions.length > 0
+    ) {
+      const timer = setTimeout(() => handleSubmit(), 800);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answers, submitted, questions.length]);
+
   const formatTime = (s: number) => {
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);

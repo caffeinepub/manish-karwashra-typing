@@ -22,6 +22,7 @@ import { useAuth } from "../context/AuthContext";
 import { paragraphs as allParagraphs } from "../data/paragraphs";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import { usePassagesByExam, useSaveTypingResult } from "../hooks/useQueries";
+import { saveExamResult } from "../utils/results";
 
 const CATEGORIES = [
   { value: "all", label: "All Categories" },
@@ -170,6 +171,21 @@ export default function TypingPractice() {
   const handleStop = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setFinished(true);
+    const currentWpm = wpm();
+    const currentAccuracy = accuracy();
+    const examDisplayName = examCategory
+      .replace(/-/g, " ")
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+    saveExamResult({
+      examName: examDisplayName,
+      examType: "typing",
+      wpm: currentWpm,
+      accuracy: currentAccuracy,
+      passed: currentWpm >= 30 && currentAccuracy >= 80,
+      duration: selectedMinutes,
+    });
   };
 
   const handleSubmit = () => {

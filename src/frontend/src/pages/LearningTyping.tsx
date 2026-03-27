@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import CharHighlight from "../components/CharHighlight";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import { paragraphs as allParagraphs } from "../data/paragraphs";
 
 const KEYBOARD_ROWS = [
   ["~", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "⌫"],
@@ -138,158 +140,26 @@ const PRACTICE_WORDS = [
   "had",
 ];
 
-const SENTENCES = [
-  "The quick brown fox jumps over the lazy dog near the river bank on a sunny day.",
-  "Government exams require regular practice and dedication to achieve success in life.",
-  "India is a democratic country with a federal structure and strong constitutional values.",
-  "Haryana state is known for its contribution to agriculture and sports in India.",
-  "Speed and accuracy are the two most important factors in competitive typing exams.",
-  "The railway network of India is one of the largest in the world connecting millions.",
+const CATEGORIES = [
+  { value: "all", label: "All Categories" },
+  { value: "haryana-gk", label: "Haryana GK" },
+  { value: "india-history", label: "India History" },
+  { value: "story", label: "Stories" },
+  { value: "vocabulary", label: "Vocabulary" },
+  { value: "covid-19", label: "COVID-19" },
+  { value: "g20", label: "G20" },
+  { value: "transport", label: "Transport" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "nature", label: "Nature" },
+  { value: "general", label: "General" },
+  { value: "ssc-cgl", label: "SSC CGL/CHSL" },
+  { value: "banking", label: "Banking" },
+  { value: "railway", label: "Railway NTPC" },
+  { value: "delhi-police", label: "Delhi Police" },
+  { value: "teaching", label: "Teaching/CTET" },
+  { value: "state", label: "State Exams" },
 ];
 
-function getRandomSentence(exclude?: string): string {
-  const filtered = exclude ? SENTENCES.filter((s) => s !== exclude) : SENTENCES;
-  return filtered[Math.floor(Math.random() * filtered.length)];
-}
-
-function getMockPassage(): string {
-  const shuffled = [...SENTENCES].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 4).join(" ");
-}
-
-// ── Typing Practice Widget ───────────────────────────────────────────────────
-function TypingPractice() {
-  const [text, setText] = useState(() => getRandomSentence());
-  const [typed, setTyped] = useState("");
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [elapsed, setElapsed] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (startTime !== null) {
-      timerRef.current = setInterval(() => {
-        setElapsed(Math.floor((Date.now() - startTime) / 1000));
-      }, 500);
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [startTime]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const val = e.target.value;
-    if (val.length === 1 && startTime === null) {
-      setStartTime(Date.now());
-      setElapsed(0);
-    }
-    setTyped(val);
-  };
-
-  const handleReset = () => {
-    setTyped("");
-    setStartTime(null);
-    setElapsed(0);
-    if (timerRef.current) clearInterval(timerRef.current);
-  };
-
-  const handleNewParagraph = () => {
-    setText(getRandomSentence(text));
-    handleReset();
-  };
-
-  const wpm =
-    elapsed > 0
-      ? Math.round(
-          (typed.trim().split(/\s+/).filter(Boolean).length / elapsed) * 60,
-        )
-      : 0;
-  const correctChars = typed.split("").filter((ch, i) => ch === text[i]).length;
-  const accuracy =
-    typed.length > 0 ? Math.round((correctChars / typed.length) * 100) : 100;
-
-  // Build highlighted chars
-  const chars = text.split("");
-
-  return (
-    <section
-      className="bg-white rounded-xl shadow p-6 mb-8"
-      data-ocid="practice.panel"
-    >
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Typing Practice</h2>
-      <p className="text-sm text-gray-500 mb-5">
-        Type the paragraph below. Stats update in real-time.
-      </p>
-
-      {/* Stats row */}
-      <div className="flex gap-4 mb-4 flex-wrap">
-        <div className="flex-1 min-w-[80px] bg-blue-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-blue-700">{wpm}</div>
-          <div className="text-xs text-gray-600">WPM</div>
-        </div>
-        <div className="flex-1 min-w-[80px] bg-green-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-green-700">{accuracy}%</div>
-          <div className="text-xs text-gray-600">Accuracy</div>
-        </div>
-        <div className="flex-1 min-w-[80px] bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-700">{elapsed}s</div>
-          <div className="text-xs text-gray-600">Time</div>
-        </div>
-      </div>
-
-      {/* Reference text with highlighting */}
-      <div className="bg-gray-50 rounded-lg p-4 mb-4 font-mono text-base leading-relaxed select-none">
-        {/* biome-ignore lint/suspicious/noArrayIndexKey: position index is the correct key for char spans */}
-        {chars.map((ch, i) => {
-          let cls = "text-gray-400";
-          if (i < typed.length) {
-            cls =
-              typed[i] === ch
-                ? "bg-green-200 text-green-900"
-                : "bg-red-200 text-red-900";
-          } else if (i === typed.length) {
-            cls = "bg-blue-300 text-gray-900";
-          }
-          return (
-            // biome-ignore lint/suspicious/noArrayIndexKey: char position is correct key
-            <span key={i} className={cls}>
-              {ch}
-            </span>
-          );
-        })}
-      </div>
-
-      <textarea
-        className="w-full border-2 border-gray-300 rounded-lg p-3 font-mono text-base focus:outline-none focus:border-blue-500 resize-none"
-        rows={3}
-        value={typed}
-        onChange={handleChange}
-        placeholder="Start typing here..."
-        data-ocid="practice.input"
-      />
-
-      <div className="flex gap-3 mt-3">
-        <button
-          type="button"
-          onClick={handleNewParagraph}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
-          data-ocid="practice.secondary_button"
-        >
-          🔄 New Paragraph
-        </button>
-        <button
-          type="button"
-          onClick={handleReset}
-          className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-colors"
-          data-ocid="practice.cancel_button"
-        >
-          ↺ Reset
-        </button>
-      </div>
-    </section>
-  );
-}
-
-// ── Mock Test Widget ─────────────────────────────────────────────────────────
 const DURATIONS = [
   { label: "1 min", seconds: 60 },
   { label: "2 min", seconds: 120 },
@@ -298,7 +168,348 @@ const DURATIONS = [
   { label: "15 min", seconds: 900 },
 ];
 
+function stripBoldMarkers(text: string): string {
+  return text.replace(/\*\*(.*?)\*\*/g, "$1");
+}
+
+// ── Pro Typing Section ────────────────────────────────────────────────────────
+function ProTyping() {
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [passageIndex, setPassageIndex] = useState(0);
+  const [selectedMinutes, setSelectedMinutes] = useState(5);
+  const [typed, setTyped] = useState("");
+  const [timeLeft, setTimeLeft] = useState(5 * 60);
+  const [started, setStarted] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const filteredParas =
+    selectedCategory === "all"
+      ? allParagraphs
+      : allParagraphs.filter((p) => p.category === selectedCategory);
+
+  const currentPara = filteredParas[passageIndex % filteredParas.length];
+  const passageText = stripBoldMarkers(currentPara.text);
+  const passageChars = passageText.split("");
+
+  useEffect(() => {
+    if (!started) setTimeLeft(selectedMinutes * 60);
+  }, [selectedMinutes, started]);
+
+  useEffect(() => {
+    if (started && !finished) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((t) => {
+          if (t <= 1) {
+            clearInterval(timerRef.current!);
+            setFinished(true);
+            return 0;
+          }
+          return t - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [started, finished]);
+
+  useEffect(() => {
+    if (typed.length >= passageText.length && started && !finished) {
+      clearInterval(timerRef.current!);
+      setFinished(true);
+    }
+  }, [typed, passageText, started, finished]);
+
+  const calcWpm = () => {
+    if (!startTime || typed.length === 0) return 0;
+    const elapsed = (Date.now() - startTime) / 1000 / 60;
+    return Math.round(
+      typed.trim().split(/\s+/).length / Math.max(elapsed, 0.01),
+    );
+  };
+
+  const calcAccuracy = () => {
+    if (typed.length === 0) return 100;
+    let correct = 0;
+    for (let i = 0; i < typed.length; i++) {
+      if (typed[i] === passageText[i]) correct++;
+    }
+    return Math.round((correct / typed.length) * 100);
+  };
+
+  const formatTime = (s: number) =>
+    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (finished) return;
+    if (!started) {
+      setStarted(true);
+      setStartTime(Date.now());
+    }
+    setTyped(e.target.value);
+  };
+
+  const handleReset = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTyped("");
+    setTimeLeft(selectedMinutes * 60);
+    setStarted(false);
+    setFinished(false);
+    setStartTime(null);
+    setTimeout(() => textareaRef.current?.focus(), 50);
+  };
+
+  const handleNewPassage = () => {
+    setPassageIndex((i) => i + 1);
+    handleReset();
+  };
+
+  const wpm = calcWpm();
+  const accuracy = calcAccuracy();
+  const typedWords = typed.trim().split(/\s+/).filter(Boolean);
+  const passageWords = passageText.trim().split(/\s+/).filter(Boolean);
+  const correctWordCount = typedWords.filter(
+    (w, i) => w === passageWords[i],
+  ).length;
+  const errorWordCount = typedWords.length - correctWordCount;
+  const progressPct = (typed.length / passageText.length) * 100;
+
+  return (
+    <section
+      className="bg-white rounded-xl shadow p-6 mb-8"
+      data-ocid="pro.panel"
+    >
+      <div className="flex items-center gap-3 mb-1">
+        <span className="bg-gradient-to-r from-[#DAA520] to-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+          PRO
+        </span>
+        <h2 className="text-xl font-bold text-gray-900">Pro Typing</h2>
+      </div>
+      <p className="text-sm text-gray-500 mb-5">
+        100+ real exam paragraphs — SSC, Railway, Banking, Delhi Police, State
+        Exams
+      </p>
+
+      {/* Category + Duration selectors */}
+      <div className="flex flex-wrap gap-3 mb-4 items-center">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-gray-600">Category:</span>
+          <select
+            value={selectedCategory}
+            onChange={(e) => {
+              setSelectedCategory(e.target.value);
+              setPassageIndex(0);
+              handleReset();
+            }}
+            className="text-sm border-2 border-[#DAA520] rounded-lg px-3 py-1.5 bg-white text-gray-800 focus:outline-none"
+            disabled={started && !finished}
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-gray-600">Duration:</span>
+          <div className="flex gap-1 flex-wrap">
+            {DURATIONS.map((d) => (
+              <button
+                key={d.seconds}
+                type="button"
+                disabled={started && !finished}
+                onClick={() => setSelectedMinutes(d.seconds / 60)}
+                className={`px-3 py-1 text-xs font-bold rounded-lg border-2 transition-colors ${
+                  selectedMinutes === d.seconds / 60
+                    ? "bg-[#DAA520] text-white border-[#DAA520]"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-[#DAA520]"
+                }`}
+                data-ocid="pro.toggle"
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleNewPassage}
+          disabled={started && !finished}
+          className="px-3 py-1.5 text-xs font-semibold border-2 border-[#DAA520] text-gray-800 rounded-lg hover:bg-amber-50 disabled:opacity-40 transition-colors"
+          data-ocid="pro.secondary_button"
+        >
+          Next Passage
+        </button>
+      </div>
+
+      {/* Passage info */}
+      <div className="flex items-center gap-2 mb-2 flex-wrap">
+        <span className="text-xs font-semibold text-[#DAA520]">
+          {currentPara.title}
+        </span>
+        <span className="text-xs text-gray-400">
+          {currentPara.language} • {currentPara.category}
+        </span>
+        <span className="ml-auto text-xs text-gray-400">
+          {(passageIndex % filteredParas.length) + 1} / {filteredParas.length}
+        </span>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3 mb-3">
+        <div className="bg-blue-50 rounded-lg p-3 text-center border border-blue-200">
+          <div className="text-2xl font-bold text-blue-700">{wpm}</div>
+          <div className="text-xs text-gray-500">WPM</div>
+        </div>
+        <div className="bg-green-50 rounded-lg p-3 text-center border border-green-200">
+          <div className="text-2xl font-bold text-green-700">{accuracy}%</div>
+          <div className="text-xs text-gray-500">Accuracy</div>
+        </div>
+        <div
+          className={`rounded-lg p-3 text-center border ${
+            timeLeft < 30
+              ? "bg-red-50 border-red-200"
+              : "bg-orange-50 border-orange-200"
+          }`}
+        >
+          <div
+            className={`text-2xl font-bold ${
+              timeLeft < 30 ? "text-red-600" : "text-orange-600"
+            }`}
+          >
+            {formatTime(timeLeft)}
+          </div>
+          <div className="text-xs text-gray-500">Time Left</div>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+        <div
+          className="bg-[#DAA520] h-2 rounded-full transition-all"
+          style={{ width: `${Math.min(progressPct, 100)}%` }}
+        />
+      </div>
+
+      {!finished ? (
+        <>
+          <div className="bg-gray-50 rounded-xl border-2 border-[#DAA520] p-5 mb-4 font-mono text-sm leading-8 select-none text-black overflow-auto max-h-56">
+            <CharHighlight chars={passageChars} typed={typed} />
+          </div>
+          <textarea
+            ref={textareaRef}
+            value={typed}
+            onChange={handleInput}
+            placeholder="Start typing here to begin the test..."
+            className="w-full h-28 p-4 border-2 border-[#DAA520] rounded-xl focus:outline-none font-mono text-sm resize-none bg-white text-black shadow-sm"
+            data-ocid="pro.editor"
+          />
+          <div className="flex gap-3 mt-3">
+            {started && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (timerRef.current) clearInterval(timerRef.current);
+                  setFinished(true);
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors"
+                data-ocid="pro.submit_button"
+              >
+                Submit
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleReset}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-colors"
+              data-ocid="pro.cancel_button"
+            >
+              Reset
+            </button>
+          </div>
+        </>
+      ) : (
+        <div
+          className="bg-white rounded-xl border-2 border-[#DAA520] p-6"
+          data-ocid="pro.success_state"
+        >
+          <div className="text-center mb-5">
+            <div className="text-4xl mb-2">🎉</div>
+            <h3 className="text-lg font-bold text-gray-900">Test Complete!</h3>
+            <p className="text-gray-500 text-sm">{currentPara.title}</p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+            <div className="bg-blue-50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-blue-600">{wpm}</div>
+              <div className="text-xs text-gray-500">WPM</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {accuracy}%
+              </div>
+              <div className="text-xs text-gray-500">Accuracy</div>
+            </div>
+            <div className="bg-emerald-50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-emerald-600">
+                {correctWordCount}
+              </div>
+              <div className="text-xs text-gray-500">Correct Words</div>
+            </div>
+            <div className="bg-red-50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-red-600">
+                {errorWordCount}
+              </div>
+              <div className="text-xs text-gray-500">Errors</div>
+            </div>
+          </div>
+
+          {wpm >= 30 && accuracy >= 80 && (
+            <div className="text-center mb-4 p-3 bg-green-50 border border-green-300 rounded-lg">
+              <div className="text-green-700 font-semibold text-sm">
+                🎓 Congratulations! You have qualified this test.
+              </div>
+              <div className="text-green-600 text-xs mt-1">
+                Criteria: 30+ WPM & 80%+ accuracy
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={handleReset}
+              className="px-4 py-2 bg-[#DAA520] text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors"
+              data-ocid="pro.primary_button"
+            >
+              Try Again
+            </button>
+            <button
+              type="button"
+              onClick={handleNewPassage}
+              className="px-4 py-2 border-2 border-[#DAA520] text-gray-800 rounded-lg text-sm font-semibold hover:bg-amber-50 transition-colors"
+              data-ocid="pro.secondary_button"
+            >
+              New Passage
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ── Mock Test Widget ─────────────────────────────────────────────────────────
 type MockPhase = "setup" | "running" | "result";
+
+function getMockPassage(): string {
+  const para = allParagraphs[Math.floor(Math.random() * allParagraphs.length)];
+  return stripBoldMarkers(para.text).slice(0, 600);
+}
 
 function TypingMock() {
   const [duration, setDuration] = useState(60);
@@ -345,7 +556,6 @@ function TypingMock() {
     setTimeLeft(duration);
   };
 
-  // Results
   const elapsed = duration - timeLeft;
   const elapsedMin = elapsed > 0 ? elapsed / 60 : duration / 60;
   const typedWords = typed.trim().split(/\s+/).filter(Boolean);
@@ -414,7 +624,6 @@ function TypingMock() {
 
       {phase === "running" && (
         <div>
-          {/* Timer */}
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm text-gray-500">Time Remaining</span>
             <span
@@ -425,12 +634,9 @@ function TypingMock() {
               {fmt(timeLeft)}
             </span>
           </div>
-
-          {/* Passage */}
           <div className="bg-gray-50 rounded-lg p-4 mb-4 font-mono text-sm leading-relaxed text-gray-800 select-none">
             {passage}
           </div>
-
           <textarea
             className="w-full border-2 border-blue-400 rounded-lg p-3 font-mono text-base focus:outline-none focus:border-blue-600 resize-none"
             rows={4}
@@ -439,7 +645,6 @@ function TypingMock() {
             placeholder="Type the passage here..."
             data-ocid="mock.input"
           />
-
           <button
             type="button"
             onClick={handleSubmit}
@@ -662,8 +867,8 @@ export default function LearningTyping() {
             </div>
           </section>
 
-          {/* ── New Sections ── */}
-          <TypingPractice />
+          {/* Pro Typing + Mock Test */}
+          <ProTyping />
           <TypingMock />
         </div>
       </main>

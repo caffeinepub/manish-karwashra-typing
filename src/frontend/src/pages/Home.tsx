@@ -146,16 +146,11 @@ export default function Home() {
               </button>
               <button
                 type="button"
-                onClick={() =>
-                  router.navigate({
-                    to: "/typing/$examCategory",
-                    params: { examCategory: "all-exam" },
-                  })
-                }
-                className="bg-blue-700 hover:bg-blue-800 text-white rounded-lg py-4 font-bold text-base w-full transition-colors"
+                onClick={() => router.navigate({ to: "/learning" })}
+                className="bg-purple-700 hover:bg-purple-800 text-white rounded-lg py-4 font-bold text-base w-full transition-colors"
                 data-ocid="feature.button"
               >
-                🖥️ Typing Practice
+                📚 Pro Typing
               </button>
               <button
                 type="button"
