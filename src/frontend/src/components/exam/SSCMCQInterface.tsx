@@ -27,6 +27,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import type { MCQQuestion } from "../../backend";
 import type { ExamConfig } from "../../data/examConfig";
+import Certificate from "../Certificate";
 
 interface Props {
   examConfig: ExamConfig;
@@ -63,6 +64,7 @@ export default function SSCMCQInterface({
   const [lang, setLang] = useState("English");
   const [timeLeft, setTimeLeft] = useState(examConfig.duration * 60);
   const [submitted, setSubmitted] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -209,13 +211,44 @@ export default function SSCMCQInterface({
                 examConfig.negativeMarking
             ).toFixed(2)}
           </div>
-          <Button
-            onClick={() => window.location.reload()}
-            className="w-full bg-[#1a237e] text-white"
-            data-ocid="ssc.primary_button"
-          >
-            Try Again / फिर से प्रयास करें
-          </Button>
+          {Math.round((score / questions.length) * 100) >= 60 && (
+            <div className="text-center mb-4 p-3 bg-green-50 border border-green-300 rounded-lg">
+              <div className="text-green-700 font-semibold text-sm">
+                🎓 Congratulations! You have qualified this test.
+              </div>
+              <div className="text-green-600 text-xs mt-1">
+                Minimum qualifying score: 60%
+              </div>
+            </div>
+          )}
+          <div className="flex gap-3">
+            {Math.round((score / questions.length) * 100) >= 60 && (
+              <Button
+                onClick={() => setShowCertificate(true)}
+                className="flex-1 bg-green-600 text-white hover:bg-green-700"
+                data-ocid="ssc.primary_button"
+              >
+                🎓 Get Certificate
+              </Button>
+            )}
+            <Button
+              onClick={() => window.location.reload()}
+              className="flex-1 bg-[#1a237e] text-white"
+              data-ocid="ssc.primary_button"
+            >
+              Try Again / फिर से प्रयास करें
+            </Button>
+          </div>
+          {showCertificate && (
+            <Certificate
+              type="mcq"
+              candidateName="Candidate"
+              examName={examConfig.fullName || examConfig.name}
+              score={score}
+              totalQuestions={questions.length}
+              onClose={() => setShowCertificate(false)}
+            />
+          )}
         </div>
       </div>
     );

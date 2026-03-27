@@ -11,6 +11,7 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import BoldText, { stripBold } from "../components/BoldText";
+import Certificate from "../components/Certificate";
 import CharHighlight from "../components/CharHighlight";
 import ExamInstructions from "../components/ExamInstructions";
 import Footer from "../components/Footer";
@@ -37,6 +38,9 @@ const CATEGORIES = [
   { value: "ssc-cgl", label: "SSC CGL/CHSL" },
   { value: "banking", label: "Banking" },
   { value: "railway", label: "Railway NTPC" },
+  { value: "delhi-police", label: "Delhi Police" },
+  { value: "teaching", label: "Teaching/CTET" },
+  { value: "state", label: "State Exams" },
 ];
 
 export default function TypingPractice() {
@@ -67,6 +71,7 @@ export default function TypingPractice() {
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [showCertificate, setShowCertificate] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const passageDivRef = useRef<HTMLDivElement>(null);
@@ -453,7 +458,26 @@ export default function TypingPractice() {
                 </div>
               )}
 
+              {wpm() >= 30 && accuracy() >= 80 && (
+                <div className="text-center mb-4 p-3 bg-green-50 border border-green-300 rounded-lg">
+                  <div className="text-green-700 font-semibold text-sm">
+                    🎓 Congratulations! You have qualified this test.
+                  </div>
+                  <div className="text-green-600 text-xs mt-1">
+                    Minimum criteria: 30 WPM & 80% accuracy
+                  </div>
+                </div>
+              )}
               <div className="flex justify-center gap-3 flex-wrap">
+                {wpm() >= 30 && accuracy() >= 80 && (
+                  <Button
+                    onClick={() => setShowCertificate(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    data-ocid="typing.save_button"
+                  >
+                    🎓 Get Certificate
+                  </Button>
+                )}
                 <Button
                   onClick={handleSave}
                   className="bg-[#DAA520] hover:bg-amber-600 text-white"
@@ -483,6 +507,16 @@ export default function TypingPractice() {
         </div>
       </main>
       <Footer />
+      {showCertificate && (
+        <Certificate
+          type="typing"
+          candidateName={displayName}
+          examName={examCategory.replace(/-/g, " ").toUpperCase()}
+          wpm={wpm()}
+          accuracy={accuracy()}
+          onClose={() => setShowCertificate(false)}
+        />
+      )}
     </div>
   );
 }

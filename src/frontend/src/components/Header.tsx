@@ -142,14 +142,25 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button
-              size="sm"
-              onClick={() => navigate({ to: "/login" })}
-              className="bg-[#DAA520] hover:bg-amber-600 text-white border-0"
-              data-ocid="auth.button"
-            >
-              Login
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate({ to: "/login" })}
+                className="border-white text-white bg-transparent hover:bg-white/10 hover:text-white"
+                data-ocid="auth.button"
+              >
+                Login
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => navigate({ to: "/login" })}
+                className="bg-teal-500 hover:bg-teal-600 text-white border-0"
+                data-ocid="auth.button"
+              >
+                Register
+              </Button>
+            </div>
           )}
         </div>
 
@@ -217,14 +228,25 @@ export default function Header() {
               </Button>
             </div>
           ) : (
-            <Button
-              size="sm"
-              onClick={() => navigate({ to: "/login" })}
-              className="bg-[#DAA520] text-white w-fit"
-              data-ocid="auth.button"
-            >
-              Login
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate({ to: "/login" })}
+                className="border-white text-white bg-transparent w-fit"
+                data-ocid="auth.button"
+              >
+                Login
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => navigate({ to: "/login" })}
+                className="bg-teal-500 hover:bg-teal-600 text-white border-0 w-fit"
+                data-ocid="auth.button"
+              >
+                Register
+              </Button>
+            </div>
           )}
         </div>
       )}

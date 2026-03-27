@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 
@@ -137,6 +138,368 @@ const PRACTICE_WORDS = [
   "had",
 ];
 
+const SENTENCES = [
+  "The quick brown fox jumps over the lazy dog near the river bank on a sunny day.",
+  "Government exams require regular practice and dedication to achieve success in life.",
+  "India is a democratic country with a federal structure and strong constitutional values.",
+  "Haryana state is known for its contribution to agriculture and sports in India.",
+  "Speed and accuracy are the two most important factors in competitive typing exams.",
+  "The railway network of India is one of the largest in the world connecting millions.",
+];
+
+function getRandomSentence(exclude?: string): string {
+  const filtered = exclude ? SENTENCES.filter((s) => s !== exclude) : SENTENCES;
+  return filtered[Math.floor(Math.random() * filtered.length)];
+}
+
+function getMockPassage(): string {
+  const shuffled = [...SENTENCES].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 4).join(" ");
+}
+
+// ── Typing Practice Widget ───────────────────────────────────────────────────
+function TypingPractice() {
+  const [text, setText] = useState(() => getRandomSentence());
+  const [typed, setTyped] = useState("");
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (startTime !== null) {
+      timerRef.current = setInterval(() => {
+        setElapsed(Math.floor((Date.now() - startTime) / 1000));
+      }, 500);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [startTime]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    if (val.length === 1 && startTime === null) {
+      setStartTime(Date.now());
+      setElapsed(0);
+    }
+    setTyped(val);
+  };
+
+  const handleReset = () => {
+    setTyped("");
+    setStartTime(null);
+    setElapsed(0);
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+
+  const handleNewParagraph = () => {
+    setText(getRandomSentence(text));
+    handleReset();
+  };
+
+  const wpm =
+    elapsed > 0
+      ? Math.round(
+          (typed.trim().split(/\s+/).filter(Boolean).length / elapsed) * 60,
+        )
+      : 0;
+  const correctChars = typed.split("").filter((ch, i) => ch === text[i]).length;
+  const accuracy =
+    typed.length > 0 ? Math.round((correctChars / typed.length) * 100) : 100;
+
+  // Build highlighted chars
+  const chars = text.split("");
+
+  return (
+    <section
+      className="bg-white rounded-xl shadow p-6 mb-8"
+      data-ocid="practice.panel"
+    >
+      <h2 className="text-xl font-bold text-gray-900 mb-1">Typing Practice</h2>
+      <p className="text-sm text-gray-500 mb-5">
+        Type the paragraph below. Stats update in real-time.
+      </p>
+
+      {/* Stats row */}
+      <div className="flex gap-4 mb-4 flex-wrap">
+        <div className="flex-1 min-w-[80px] bg-blue-50 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-blue-700">{wpm}</div>
+          <div className="text-xs text-gray-600">WPM</div>
+        </div>
+        <div className="flex-1 min-w-[80px] bg-green-50 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-green-700">{accuracy}%</div>
+          <div className="text-xs text-gray-600">Accuracy</div>
+        </div>
+        <div className="flex-1 min-w-[80px] bg-gray-50 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-gray-700">{elapsed}s</div>
+          <div className="text-xs text-gray-600">Time</div>
+        </div>
+      </div>
+
+      {/* Reference text with highlighting */}
+      <div className="bg-gray-50 rounded-lg p-4 mb-4 font-mono text-base leading-relaxed select-none">
+        {/* biome-ignore lint/suspicious/noArrayIndexKey: position index is the correct key for char spans */}
+        {chars.map((ch, i) => {
+          let cls = "text-gray-400";
+          if (i < typed.length) {
+            cls =
+              typed[i] === ch
+                ? "bg-green-200 text-green-900"
+                : "bg-red-200 text-red-900";
+          } else if (i === typed.length) {
+            cls = "bg-blue-300 text-gray-900";
+          }
+          return (
+            // biome-ignore lint/suspicious/noArrayIndexKey: char position is correct key
+            <span key={i} className={cls}>
+              {ch}
+            </span>
+          );
+        })}
+      </div>
+
+      <textarea
+        className="w-full border-2 border-gray-300 rounded-lg p-3 font-mono text-base focus:outline-none focus:border-blue-500 resize-none"
+        rows={3}
+        value={typed}
+        onChange={handleChange}
+        placeholder="Start typing here..."
+        data-ocid="practice.input"
+      />
+
+      <div className="flex gap-3 mt-3">
+        <button
+          type="button"
+          onClick={handleNewParagraph}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+          data-ocid="practice.secondary_button"
+        >
+          🔄 New Paragraph
+        </button>
+        <button
+          type="button"
+          onClick={handleReset}
+          className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-colors"
+          data-ocid="practice.cancel_button"
+        >
+          ↺ Reset
+        </button>
+      </div>
+    </section>
+  );
+}
+
+// ── Mock Test Widget ─────────────────────────────────────────────────────────
+const DURATIONS = [
+  { label: "1 min", seconds: 60 },
+  { label: "2 min", seconds: 120 },
+  { label: "5 min", seconds: 300 },
+  { label: "10 min", seconds: 600 },
+  { label: "15 min", seconds: 900 },
+];
+
+type MockPhase = "setup" | "running" | "result";
+
+function TypingMock() {
+  const [duration, setDuration] = useState(60);
+  const [phase, setPhase] = useState<MockPhase>("setup");
+  const [passage, setPassage] = useState(() => getMockPassage());
+  const [typed, setTyped] = useState("");
+  const [timeLeft, setTimeLeft] = useState(60);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startTest = () => {
+    setPassage(getMockPassage());
+    setTyped("");
+    setTimeLeft(duration);
+    setPhase("running");
+  };
+
+  useEffect(() => {
+    if (phase === "running") {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current!);
+            setPhase("result");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [phase]);
+
+  const handleSubmit = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setPhase("result");
+  };
+
+  const handleNewTest = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setPhase("setup");
+    setTyped("");
+    setTimeLeft(duration);
+  };
+
+  // Results
+  const elapsed = duration - timeLeft;
+  const elapsedMin = elapsed > 0 ? elapsed / 60 : duration / 60;
+  const typedWords = typed.trim().split(/\s+/).filter(Boolean);
+  const passageWords = passage.split(/\s+/);
+  let correctWords = 0;
+  typedWords.forEach((w, i) => {
+    if (w === passageWords[i]) correctWords++;
+  });
+  const errors = typedWords.length - correctWords;
+  const wpm = Math.round(typedWords.length / elapsedMin);
+  const correctChars = typed
+    .split("")
+    .filter((ch, i) => ch === passage[i]).length;
+  const accuracy =
+    typed.length > 0 ? Math.round((correctChars / typed.length) * 100) : 0;
+
+  const fmt = (s: number) =>
+    `${Math.floor(s / 60)
+      .toString()
+      .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
+
+  return (
+    <section
+      className="bg-white rounded-xl shadow p-6 mb-8"
+      data-ocid="mock.panel"
+    >
+      <h2 className="text-xl font-bold text-gray-900 mb-1">
+        Mock Test — Typing
+      </h2>
+      <p className="text-sm text-gray-500 mb-5">
+        Unlimited practice, real exam simulation
+      </p>
+
+      {phase === "setup" && (
+        <div>
+          <p className="text-sm font-semibold text-gray-700 mb-3">
+            Select Duration:
+          </p>
+          <div className="flex gap-2 flex-wrap mb-6">
+            {DURATIONS.map((d) => (
+              <button
+                type="button"
+                key={d.seconds}
+                onClick={() => setDuration(d.seconds)}
+                className={`px-4 py-2 rounded-lg border-2 text-sm font-bold transition-colors ${
+                  duration === d.seconds
+                    ? "bg-[#0d1b4b] text-white border-[#0d1b4b]"
+                    : "bg-white text-gray-800 border-gray-300 hover:border-blue-500"
+                }`}
+                data-ocid="mock.toggle"
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={startTest}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg font-bold text-base hover:bg-green-700 transition-colors"
+            data-ocid="mock.primary_button"
+          >
+            🚀 Start Mock Test
+          </button>
+        </div>
+      )}
+
+      {phase === "running" && (
+        <div>
+          {/* Timer */}
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm text-gray-500">Time Remaining</span>
+            <span
+              className={`text-3xl font-mono font-bold ${
+                timeLeft <= 10 ? "text-red-600" : "text-[#0d1b4b]"
+              }`}
+            >
+              {fmt(timeLeft)}
+            </span>
+          </div>
+
+          {/* Passage */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-4 font-mono text-sm leading-relaxed text-gray-800 select-none">
+            {passage}
+          </div>
+
+          <textarea
+            className="w-full border-2 border-blue-400 rounded-lg p-3 font-mono text-base focus:outline-none focus:border-blue-600 resize-none"
+            rows={4}
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            placeholder="Type the passage here..."
+            data-ocid="mock.input"
+          />
+
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="mt-3 px-5 py-2 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition-colors"
+            data-ocid="mock.submit_button"
+          >
+            Submit
+          </button>
+        </div>
+      )}
+
+      {phase === "result" && (
+        <div>
+          <div
+            className="bg-[#0d1b4b] text-white rounded-xl p-6 mb-5"
+            data-ocid="mock.success_state"
+          >
+            <h3 className="text-lg font-bold mb-4 text-center">
+              📊 Your Result
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-yellow-400">{wpm}</div>
+                <div className="text-xs text-gray-300 mt-1">WPM</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-400">
+                  {accuracy}%
+                </div>
+                <div className="text-xs text-gray-300 mt-1">Accuracy</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-300">
+                  {correctWords}
+                </div>
+                <div className="text-xs text-gray-300 mt-1">Correct Words</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-red-400">
+                  {errors < 0 ? 0 : errors}
+                </div>
+                <div className="text-xs text-gray-300 mt-1">Errors</div>
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleNewTest}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors"
+            data-ocid="mock.secondary_button"
+          >
+            🔄 New Mock Test
+          </button>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ── Main Page ────────────────────────────────────────────────────────────────
 export default function LearningTyping() {
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f5f5]">
@@ -151,7 +514,7 @@ export default function LearningTyping() {
             preparation
           </p>
 
-          <section className="bg-white rounded-xl shadow-card p-6 mb-8">
+          <section className="bg-white rounded-xl shadow p-6 mb-8">
             <h2 className="text-lg font-bold text-gray-800 mb-2">
               Keyboard Layout &amp; Finger Placement
             </h2>
@@ -233,7 +596,7 @@ export default function LearningTyping() {
             </div>
           </section>
 
-          <section className="bg-[#0d1b4b] text-white rounded-xl shadow-card p-6 mb-8">
+          <section className="bg-[#0d1b4b] text-white rounded-xl shadow p-6 mb-8">
             <h2 className="text-lg font-bold mb-3">The Home Row</h2>
             <p className="text-gray-300 text-sm mb-4">
               The home row is the foundation of touch typing. Always start and
@@ -269,7 +632,7 @@ export default function LearningTyping() {
               {TIPS.map((tip, i) => (
                 <div
                   key={tip.title}
-                  className="bg-white rounded-xl shadow-card p-5"
+                  className="bg-white rounded-xl shadow p-5"
                   data-ocid={`learning.item.${i + 1}`}
                 >
                   <div className="text-3xl mb-3">{tip.icon}</div>
@@ -280,7 +643,7 @@ export default function LearningTyping() {
             </div>
           </section>
 
-          <section className="bg-white rounded-xl shadow-card p-6">
+          <section className="bg-white rounded-xl shadow p-6 mb-8">
             <h2 className="text-lg font-bold text-gray-800 mb-2">
               Common Practice Words
             </h2>
@@ -298,6 +661,10 @@ export default function LearningTyping() {
               ))}
             </div>
           </section>
+
+          {/* ── New Sections ── */}
+          <TypingPractice />
+          <TypingMock />
         </div>
       </main>
       <Footer />

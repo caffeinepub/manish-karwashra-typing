@@ -229,14 +229,9 @@ export default function LoginPage() {
               </Button>
               <div className="text-center text-xs text-gray-500 pt-2">
                 Pehli baar aa rahe hain?{" "}
-                <Tabs>
-                  <TabsTrigger
-                    value="register"
-                    className="text-[#DAA520] font-semibold p-0 h-auto"
-                  >
-                    Register karo
-                  </TabsTrigger>
-                </Tabs>
+                <span className="text-[#DAA520] font-semibold cursor-pointer hover:underline">
+                  Register karo
+                </span>
               </div>
             </TabsContent>
 
