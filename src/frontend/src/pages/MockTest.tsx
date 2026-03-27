@@ -27,8 +27,6 @@ import {
   CheckCircle,
   ChevronRight,
   Clock,
-  Delete,
-  Fingerprint,
   Keyboard,
   Monitor,
   User,
@@ -97,20 +95,7 @@ const INSTRUCTIONS_HI = [
   "समय समाप्त होने पर परीक्षा स्वतः सबमिट हो जाएगी।",
 ];
 
-const VIRTUAL_KEYS = [
-  ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "⌫"],
-  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-  ["Z", "X", "C", "V", "B", "N", "M", ".", "@"],
-];
-
-type Phase =
-  | "select"
-  | "login"
-  | "instructions"
-  | "practice"
-  | "exam"
-  | "result";
+type Phase = "select" | "instructions" | "practice" | "exam" | "result";
 
 const slugToExam: Record<string, string> = {
   "ssc-cgl": "SSC CGL",
@@ -135,13 +120,15 @@ export default function MockTest() {
   const [exam, setExam] = useState(
     examSlugParam ? slugToExam[examSlugParam] || "SSC CGL" : "SSC CGL",
   );
-  const [phase, setPhase] = useState<Phase>(examSlugParam ? "login" : "select");
+  const [phase, setPhase] = useState<Phase>(
+    examSlugParam ? "instructions" : "select",
+  );
   const [paraIndex, setParaIndex] = useState(0);
 
   // Login state
-  const [rollNo, setRollNo] = useState("");
-  const [password, setPassword] = useState("");
-  const [activeInput, setActiveInput] = useState<"roll" | "pass">("roll");
+  const [rollNo] = useState(
+    () => `CAND${Math.floor(100000 + Math.random() * 900000)}`,
+  );
 
   // Instructions state
   const [instrLang, setInstrLang] = useState<"en" | "hi">("en");
@@ -267,16 +254,6 @@ export default function MockTest() {
     }
   }, [typed, passage, examStarted, finished]);
 
-  const handleVirtualKey = (key: string) => {
-    if (key === "⌫") {
-      if (activeInput === "roll") setRollNo((p) => p.slice(0, -1));
-      else setPassword((p) => p.slice(0, -1));
-    } else {
-      if (activeInput === "roll") setRollNo((p) => p + key);
-      else setPassword((p) => p + key);
-    }
-  };
-
   const handleStartExam = () => {
     setTyped("");
     setTimeLeft(duration);
@@ -381,191 +358,24 @@ export default function MockTest() {
                   Duration: {formatTime(DURATIONS[exam] || 600)}
                 </p>
                 <p className="text-sm text-amber-700">
-                  Full exam simulation with login, instructions &amp; practice
+                  Full exam simulation with instructions Full exam simulation
+                  with login, instructions &amp; practiceamp; practice
                 </p>
                 <p className="text-sm text-amber-700">
                   Backspace restricted in exam mode
                 </p>
               </div>
               <Button
-                onClick={() => setPhase("login")}
+                onClick={() => setPhase("instructions")}
                 className="bg-orange-600 hover:bg-orange-700 text-white px-8"
                 data-ocid="mock.primary_button"
               >
-                Proceed to Exam Login <ChevronRight className="ml-2 h-4 w-4" />
+                Start Exam <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </div>
         </main>
         <Footer />
-      </div>
-    );
-  }
-
-  if (phase === "login") {
-    return (
-      <div className="min-h-screen flex flex-col bg-gray-100">
-        {/* Top bar */}
-        <div className="bg-[#0d1b4b] text-white px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm">
-            <Monitor className="h-4 w-4" />
-            <span>System Node No: C001</span>
-          </div>
-          <div className="text-sm font-semibold tracking-wide">
-            ONLINE EXAMINATION SYSTEM — {exam}
-          </div>
-          <Badge variant="outline" className="text-white border-white text-xs">
-            LOGIN
-          </Badge>
-        </div>
-
-        <main className="flex-1 py-6 px-4">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left: Login Form + Virtual Keyboard */}
-              <div className="bg-white rounded-xl shadow p-6">
-                <h2 className="text-lg font-bold text-[#0d1b4b] mb-5 flex items-center gap-2">
-                  <Keyboard className="h-5 w-5" /> Candidate Login
-                </h2>
-                <div className="space-y-4 mb-5">
-                  <div>
-                    <Label htmlFor="roll-input" className="mb-1 block text-sm">
-                      Roll Number
-                    </Label>
-                    <Input
-                      id="roll-input"
-                      value={rollNo}
-                      onFocus={() => setActiveInput("roll")}
-                      onChange={(e) => setRollNo(e.target.value)}
-                      placeholder="Enter Roll Number"
-                      className={`border-2 ${
-                        activeInput === "roll"
-                          ? "border-orange-400"
-                          : "border-gray-200"
-                      }`}
-                      data-ocid="mock.input"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="pass-input" className="mb-1 block text-sm">
-                      Password (PIN)
-                    </Label>
-                    <Input
-                      id="pass-input"
-                      type="password"
-                      value={password}
-                      onFocus={() => setActiveInput("pass")}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter Password"
-                      className={`border-2 ${
-                        activeInput === "pass"
-                          ? "border-orange-400"
-                          : "border-gray-200"
-                      }`}
-                      data-ocid="mock.input"
-                    />
-                  </div>
-                </div>
-
-                {/* Virtual Keyboard */}
-                <div className="bg-gray-50 rounded-lg p-3 border">
-                  <p className="text-xs text-gray-500 mb-2 font-medium">
-                    Virtual Keyboard — typing into:{" "}
-                    <span className="text-orange-600 font-semibold">
-                      {activeInput === "roll" ? "Roll Number" : "Password"}
-                    </span>
-                  </p>
-                  <div className="space-y-1.5">
-                    {VIRTUAL_KEYS.map((row, ri) => (
-                      <div
-                        key={row.join("")}
-                        className="flex gap-1 justify-center flex-wrap"
-                      >
-                        {row.map((key) => (
-                          <button
-                            key={key}
-                            type="button"
-                            onClick={() => handleVirtualKey(key)}
-                            className="bg-white border border-gray-300 rounded px-2.5 py-1.5 text-xs font-mono hover:bg-orange-50 hover:border-orange-400 active:bg-orange-100 transition-colors shadow-sm min-w-[28px]"
-                            data-ocid="mock.button"
-                          >
-                            {key === "⌫" ? <Delete className="h-3 w-3" /> : key}
-                          </button>
-                        ))}
-                        {ri === 3 && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (activeInput === "roll")
-                                setRollNo((p) => `${p} `);
-                              else setPassword((p) => `${p} `);
-                            }}
-                            className="bg-white border border-gray-300 rounded px-6 py-1.5 text-xs font-mono hover:bg-orange-50 hover:border-orange-400 transition-colors shadow-sm"
-                          >
-                            SPACE
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <Button
-                  onClick={() => setPhase("instructions")}
-                  className="mt-5 w-full bg-orange-600 hover:bg-orange-700 text-white"
-                  data-ocid="mock.primary_button"
-                >
-                  Next <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* Right: Candidate Info + Biometric */}
-              <div className="space-y-4">
-                <div className="bg-white rounded-xl shadow p-6 text-center">
-                  <div className="w-24 h-24 rounded-full bg-blue-100 border-4 border-blue-200 flex items-center justify-center mx-auto mb-3">
-                    <User className="h-12 w-12 text-blue-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-[#0d1b4b]">
-                    {rollNo || "Candidate Name"}
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-1">
-                    Roll No: {rollNo || "2024001"}
-                  </p>
-                  <p className="text-sm text-gray-500">{exam} Examination</p>
-                  <Badge className="mt-2 bg-green-100 text-green-700 border-green-200">
-                    Active Candidate
-                  </Badge>
-                </div>
-
-                <div className="bg-white rounded-xl shadow p-6 text-center">
-                  <h3 className="text-sm font-semibold text-gray-600 mb-3">
-                    Biometric Verification
-                  </h3>
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center mx-auto mb-3 border-2 border-orange-300">
-                    <Fingerprint className="h-10 w-10 text-orange-500" />
-                  </div>
-                  <p className="text-xs text-gray-500 mb-1">
-                    Place your finger on the scanner
-                  </p>
-                  <div className="flex items-center justify-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                    <span className="text-xs text-green-600 font-medium">
-                      Scanner Ready
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-[#0d1b4b] text-white rounded-xl p-4 text-sm">
-                  <p className="font-semibold mb-1">Exam: {exam}</p>
-                  <p className="text-blue-200">
-                    Duration: {formatTime(DURATIONS[exam] || 600)}
-                  </p>
-                  <p className="text-blue-200">Node: C001 | Hall: A</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
       </div>
     );
   }
