@@ -139,6 +139,43 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Quick Access Shortcuts */}
+      <section className="py-5 px-4 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <button
+              type="button"
+              onClick={() => router.navigate({ to: "/mock-list" })}
+              data-ocid="home.mock_test.button"
+              className="flex flex-col items-center justify-center gap-3 bg-blue-700 hover:bg-blue-800 text-white rounded-2xl shadow-lg py-8 px-6 transition-transform hover:scale-105 active:scale-95 w-full"
+            >
+              <span className="text-5xl">📝</span>
+              <span className="text-xl font-bold">Exam Mock Test</span>
+              <span className="text-sm opacity-80">100+ Numbered Mocks</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => router.navigate({ to: "/typing-test" })}
+              data-ocid="home.typing_test.button"
+              className="flex flex-col items-center justify-center gap-3 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl shadow-lg py-8 px-6 transition-transform hover:scale-105 active:scale-95 w-full"
+            >
+              <span className="text-5xl">⌨️</span>
+              <span className="text-xl font-bold">Typing Test</span>
+              <span className="text-sm opacity-80">All Exam Patterns</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => router.navigate({ to: "/practice" })}
+              data-ocid="home.practice_test.button"
+              className="flex flex-col items-center justify-center gap-3 bg-green-700 hover:bg-green-800 text-white rounded-2xl shadow-lg py-8 px-6 transition-transform hover:scale-105 active:scale-95 w-full"
+            >
+              <span className="text-5xl">📚</span>
+              <span className="text-xl font-bold">Practice Test</span>
+              <span className="text-sm opacity-80">Beginner to Advanced</span>
+            </button>
+          </div>
+        </div>
+      </section>
       {/* Welcome Banner */}
       <section className="py-6 px-4">
         <div className="max-w-7xl mx-auto">

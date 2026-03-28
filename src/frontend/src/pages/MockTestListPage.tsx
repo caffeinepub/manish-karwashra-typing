@@ -14,6 +14,8 @@ const ORDERED_EXAMS = [
   "ssc-mts",
   "delhi-police-hcm",
   "railway-ntpc",
+  "ntpc-graduate",
+  "ntpc-undergraduate",
   "dsssb",
   "hssc",
   "banking",
@@ -21,30 +23,34 @@ const ORDERED_EXAMS = [
   "ctet",
 ];
 
-const EXAM_COLORS: Record<string, string> = {
-  "ssc-cgl": "bg-blue-600 hover:bg-blue-700 text-white",
-  "ssc-chsl": "bg-blue-500 hover:bg-blue-600 text-white",
-  "ssc-mts": "bg-blue-400 hover:bg-blue-500 text-white",
-  "delhi-police-hcm": "bg-indigo-600 hover:bg-indigo-700 text-white",
-  "railway-ntpc": "bg-orange-500 hover:bg-orange-600 text-white",
-  dsssb: "bg-teal-600 hover:bg-teal-700 text-white",
-  hssc: "bg-green-600 hover:bg-green-700 text-white",
-  banking: "bg-slate-700 hover:bg-slate-800 text-white",
-  pcs: "bg-emerald-600 hover:bg-emerald-700 text-white",
-  ctet: "bg-purple-600 hover:bg-purple-700 text-white",
-};
-
 const EXAM_HEADER_COLORS: Record<string, string> = {
   "ssc-cgl": "from-blue-700 to-blue-500",
   "ssc-chsl": "from-blue-600 to-blue-400",
   "ssc-mts": "from-blue-500 to-blue-300",
   "delhi-police-hcm": "from-indigo-700 to-indigo-500",
   "railway-ntpc": "from-orange-600 to-orange-400",
+  "ntpc-graduate": "from-orange-800 to-orange-600",
+  "ntpc-undergraduate": "from-red-700 to-red-500",
   dsssb: "from-teal-700 to-teal-500",
   hssc: "from-green-700 to-green-500",
   banking: "from-slate-800 to-slate-600",
   pcs: "from-emerald-700 to-emerald-500",
   ctet: "from-purple-700 to-purple-500",
+};
+
+const BUTTON_BG: Record<string, string> = {
+  "ssc-cgl": "#1d4ed8",
+  "ssc-chsl": "#2563eb",
+  "ssc-mts": "#3b82f6",
+  "delhi-police-hcm": "#4f46e5",
+  "railway-ntpc": "#f97316",
+  "ntpc-graduate": "#ea580c",
+  "ntpc-undergraduate": "#dc2626",
+  dsssb: "#0d9488",
+  hssc: "#16a34a",
+  banking: "#334155",
+  pcs: "#059669",
+  ctet: "#9333ea",
 };
 
 // Fallback config for exams not in EXAM_CONFIGS
@@ -62,8 +68,7 @@ const FALLBACK_CONFIGS: Record<
 > = {
   "ssc-mts": {
     name: "SSC MTS",
-    nameHi:
-      "\u090f\u0938\u090f\u0938\u0938\u0940 \u090f\u092e\u091f\u0940\u090f\u0938",
+    nameHi: "एसएससी एमटीएस",
     fullName: "SSC Multi-Tasking Staff",
     totalQuestions: 100,
     duration: 90,
@@ -72,17 +77,34 @@ const FALLBACK_CONFIGS: Record<
   },
   "delhi-police-hcm": {
     name: "Delhi Police HCM",
-    nameHi:
-      "\u0926\u093f\u0932\u094d\u0932\u0940 \u092a\u0941\u0932\u093f\u0938",
+    nameHi: "दिल्ली पुलिस",
     fullName: "Delhi Police Head Constable Ministerial",
     totalQuestions: 100,
     duration: 90,
     sections: 4,
     badge: "POLICE",
   },
+  "ntpc-graduate": {
+    name: "NTPC Graduate",
+    nameHi: "एनटीपीसी ग्रेजुएट",
+    fullName: "RRB NTPC Graduate Level CBT-1",
+    totalQuestions: 100,
+    duration: 90,
+    sections: 3,
+    badge: "RAILWAY",
+  },
+  "ntpc-undergraduate": {
+    name: "NTPC UG Level",
+    nameHi: "एनटीपीसी अंडर ग्रेजुएट",
+    fullName: "RRB NTPC Under Graduate Level CBT-1",
+    totalQuestions: 100,
+    duration: 90,
+    sections: 3,
+    badge: "RAILWAY",
+  },
   pcs: {
     name: "PCS",
-    nameHi: "\u092a\u0940\u0938\u0940\u090f\u0938",
+    nameHi: "पीसीएस",
     fullName: "Provincial Civil Services Prelims",
     totalQuestions: 150,
     duration: 120,
@@ -91,7 +113,7 @@ const FALLBACK_CONFIGS: Record<
   },
   ctet: {
     name: "CTET",
-    nameHi: "\u0938\u0940\u091f\u0940\u0908\u091f\u0940",
+    nameHi: "सीटेट",
     fullName: "Central Teacher Eligibility Test",
     totalQuestions: 150,
     duration: 150,
@@ -144,7 +166,7 @@ export default function MockTestListPage() {
           </p>
           <div className="mt-4 flex flex-wrap gap-3 text-xs text-blue-100">
             <span className="bg-white/10 px-3 py-1 rounded-full">
-              ✅ 11 Exams
+              ✅ 13 Exams
             </span>
             <span className="bg-white/10 px-3 py-1 rounded-full">
               ✅ 100 Mocks each
@@ -153,7 +175,7 @@ export default function MockTestListPage() {
               ✅ Hartron: 43 Mocks (1287 Qs)
             </span>
             <span className="bg-white/10 px-3 py-1 rounded-full">
-              ✅ Unique questions per mock
+              ✅ NTPC Graduate & UG Level
             </span>
           </div>
         </div>
@@ -193,8 +215,6 @@ export default function MockTestListPage() {
                 </div>
               </div>
             </div>
-
-            {/* Info chips */}
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
               <span className="bg-white/15 px-2.5 py-1 rounded-full">
                 General: 15/30 to Pass
@@ -210,9 +230,7 @@ export default function MockTestListPage() {
               </span>
             </div>
           </CardHeader>
-
           <CardContent className="p-5">
-            {/* Search */}
             <div className="flex items-center gap-2 mb-4">
               <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <Input
@@ -232,14 +250,17 @@ export default function MockTestListPage() {
                 </button>
               )}
             </div>
-
-            {/* Mock Buttons */}
             <div className="flex flex-wrap gap-1.5">
               {hartronMocks.map((n) => (
                 <Button
                   key={n}
                   size="sm"
-                  className="h-7 px-2.5 text-xs font-medium bg-cyan-600 hover:bg-cyan-700 text-white"
+                  style={{
+                    backgroundColor: "#0891b2",
+                    color: "white",
+                    minWidth: "60px",
+                  }}
+                  className="h-7 px-2.5 text-xs font-medium"
                   onClick={() => navigate({ to: `/hartron-mock/${n}` })}
                   data-ocid={`hartron.mock.item.${n}`}
                 >
@@ -252,7 +273,6 @@ export default function MockTestListPage() {
                 </p>
               )}
             </div>
-
             <p className="mt-3 text-xs text-gray-400">
               {hartronMocks.length === 43
                 ? "43 mock tests available — 1287 questions in bank"
@@ -270,13 +290,16 @@ export default function MockTestListPage() {
           const fullName = cfg?.fullName ?? fb?.fullName ?? name;
           const totalQ = cfg?.totalQuestions ?? fb?.totalQuestions ?? 100;
           const duration = cfg?.duration ?? fb?.duration ?? 60;
-          const sections = cfg?.sections?.length ?? fb?.sections ?? 0;
+          const sections =
+            cfg?.sections?.length ??
+            (typeof fb?.sections === "number" ? fb.sections : 0);
           const badge = cfg?.badge ?? fb?.badge ?? "EXAM";
-          const btnColor =
-            EXAM_COLORS[slug] ?? "bg-gray-600 hover:bg-gray-700 text-white";
           const headerGradient =
             EXAM_HEADER_COLORS[slug] ?? "from-gray-700 to-gray-500";
+          const btnBg = BUTTON_BG[slug] ?? "#4b5563";
           const mocks = getFilteredMocks(slug);
+          const isNew =
+            slug === "ntpc-graduate" || slug === "ntpc-undergraduate";
 
           return (
             <Card key={slug} className="overflow-hidden shadow-md border-0">
@@ -289,6 +312,11 @@ export default function MockTestListPage() {
                       <Badge className="bg-white/20 text-white border-white/30 text-xs">
                         {badge}
                       </Badge>
+                      {isNew && (
+                        <Badge className="bg-yellow-400/30 text-yellow-100 border-yellow-300/30 text-xs">
+                          NEW ✨
+                        </Badge>
+                      )}
                     </div>
                     <h2 className="text-xl font-bold">{name}</h2>
                     <p className="text-white/80 text-sm">
@@ -311,7 +339,6 @@ export default function MockTestListPage() {
                   </div>
                 </div>
               </CardHeader>
-
               <CardContent className="p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -339,13 +366,17 @@ export default function MockTestListPage() {
                     </button>
                   )}
                 </div>
-
                 <div className="flex flex-wrap gap-1.5">
                   {mocks.map((n) => (
                     <Button
                       key={n}
                       size="sm"
-                      className={`h-7 px-2.5 text-xs font-medium ${btnColor}`}
+                      style={{
+                        backgroundColor: btnBg,
+                        color: "white",
+                        minWidth: "60px",
+                      }}
+                      className="h-7 px-2.5 text-xs font-medium"
                       onClick={() => handleMockClick(slug, n)}
                       data-ocid={`mock.item.${n}`}
                     >
@@ -358,7 +389,6 @@ export default function MockTestListPage() {
                     </p>
                   )}
                 </div>
-
                 <p className="mt-3 text-xs text-gray-400">
                   {mocks.length === 100
                     ? "100 mock tests available"

@@ -71,7 +71,7 @@ export default function TCSMCQInterface({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-submit when all questions are answered
+  // Auto-submit when all questions answered
   useEffect(() => {
     if (
       !submitted &&
@@ -123,13 +123,13 @@ export default function TCSMCQInterface({
 
   const handleSubmit = () => {
     if (timerRef.current) clearInterval(timerRef.current);
-    const score = questions.reduce(
+    const correct = questions.reduce(
       (acc, q, i) => (answers[i] === Number(q.correctAnswer) ? acc + 1 : acc),
       0,
     );
     setSubmitted(true);
     setShowConfirm(false);
-    onComplete?.({ score, total: questions.length, answers });
+    onComplete?.({ score: correct, total: questions.length, answers });
   };
 
   const getQuestionParts = (text: string) => {
@@ -150,10 +150,17 @@ export default function TCSMCQInterface({
   });
 
   if (submitted) {
-    const score = questions.reduce(
+    const correct = questions.reduce(
       (acc, q2, i) => (answers[i] === Number(q2.correctAnswer) ? acc + 1 : acc),
       0,
     );
+    const wrong = Object.keys(answers).length - correct;
+    const netScore =
+      examConfig.negativeMarking > 0
+        ? Math.max(0, correct - wrong * examConfig.negativeMarking)
+        : correct;
+    const percentage = Math.round((netScore / questions.length) * 100);
+
     return (
       <div className="min-h-screen bg-orange-50 flex items-center justify-center p-4">
         <div
@@ -166,25 +173,58 @@ export default function TCSMCQInterface({
               Test Submitted
             </h2>
             <p className="text-gray-500">{examConfig.fullName}</p>
+            <p className="text-sm text-gray-400 mt-1">
+              {candidateName} | Reg: {rollNo}
+            </p>
           </div>
-          <div className="grid grid-cols-3 gap-4 mb-6">
+
+          {/* Score cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
             <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{score}</div>
+              <div className="text-2xl font-bold text-green-600">{correct}</div>
               <div className="text-xs text-gray-500">Correct</div>
             </div>
             <div className="bg-red-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-red-500">
-                {questions.length - score}
-              </div>
+              <div className="text-2xl font-bold text-red-500">{wrong}</div>
               <div className="text-xs text-gray-500">Wrong</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-gray-500">
+                {questions.length - Object.keys(answers).length}
+              </div>
+              <div className="text-xs text-gray-500">Skipped</div>
             </div>
             <div className="bg-orange-50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-orange-600">
-                {Math.round((score / questions.length) * 100)}%
+                {percentage}%
               </div>
-              <div className="text-xs text-gray-500">Score</div>
+              <div className="text-xs text-gray-500">Score %</div>
             </div>
           </div>
+
+          {/* Net score with negative marking */}
+          <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-4 mb-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-gray-700">
+                Net Score (After Negative Marking)
+              </span>
+              <span className="text-xl font-bold text-orange-700">
+                {netScore.toFixed(2)} / {questions.length}
+              </span>
+            </div>
+            <div className="text-xs text-gray-500">
+              Formula: {correct} correct × 1 − {wrong} wrong ×{" "}
+              {examConfig.negativeMarking} ={" "}
+              <strong>{netScore.toFixed(2)}</strong>
+            </div>
+            {examConfig.negativeMarking > 0 && (
+              <div className="mt-1 text-xs text-red-600">
+                ⚠ Negative Marking: −{examConfig.negativeMarking} per wrong
+                answer
+              </div>
+            )}
+          </div>
+
           <Button
             onClick={() => window.location.reload()}
             className="w-full text-white"
@@ -240,6 +280,18 @@ export default function TCSMCQInterface({
           </div>
         </div>
 
+        {/* Negative marking info bar */}
+        {examConfig.negativeMarking > 0 && (
+          <div className="bg-red-900/30 px-4 py-1 text-xs text-orange-100 flex items-center gap-4">
+            <span>✓ Correct: +1 mark</span>
+            <span>✗ Wrong: −{examConfig.negativeMarking} mark</span>
+            <span>○ Skipped: 0 mark</span>
+            <span className="ml-auto font-medium">
+              Negative Marking Applied
+            </span>
+          </div>
+        )}
+
         {/* Section Tabs */}
         <div className="flex overflow-x-auto border-t border-orange-400">
           {examConfig.sections.map((sec, i) => (
@@ -256,9 +308,7 @@ export default function TCSMCQInterface({
             >
               {sec.name}
               <span
-                className={`ml-1.5 text-xs ${
-                  activeSection === i ? "text-orange-500" : "text-orange-300"
-                }`}
+                className={`ml-1.5 text-xs ${activeSection === i ? "text-orange-500" : "text-orange-300"}`}
               >
                 ({sectionAttempts[i]}/{sec.questions})
               </span>
@@ -419,9 +469,9 @@ export default function TCSMCQInterface({
               Question Grid
             </div>
             <div className="grid grid-cols-5 gap-1">
-              {questions.map((q, i) => (
+              {questions.map((qItem, i) => (
                 <button
-                  key={String(q.id)}
+                  key={String(qItem.id)}
                   type="button"
                   onClick={() => goTo(i)}
                   className={`w-8 h-7 rounded text-xs font-bold transition-all ${
@@ -469,6 +519,12 @@ export default function TCSMCQInterface({
             <DialogDescription>
               You have answered {Object.keys(answers).length} out of{" "}
               {questions.length} questions.
+              {examConfig.negativeMarking > 0 && (
+                <span className="block mt-1 text-red-600 text-xs">
+                  ⚠ Negative marking of −{examConfig.negativeMarking} applies to
+                  wrong answers.
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
