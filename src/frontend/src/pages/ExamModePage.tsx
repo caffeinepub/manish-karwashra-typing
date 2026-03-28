@@ -52,7 +52,7 @@ const EXAMS = [
     desc: "IBPS, SBI, RBI bank clerk aur PO posts ke liye typing test.",
   },
   {
-    id: "railway",
+    id: "railway-ntpc",
     name: "Railway Typing",
     emoji: "🚂",
     color: "#1a237e",

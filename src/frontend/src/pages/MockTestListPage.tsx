@@ -1,10 +1,16 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "@tanstack/react-router";
 import { BookOpen, Clock, HelpCircle, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Footer from "../components/Footer";
 import { EXAM_CONFIGS } from "../data/examConfig";
 
@@ -126,6 +132,14 @@ export default function MockTestListPage() {
   const navigate = useNavigate();
   const [searchNums, setSearchNums] = useState<Record<string, string>>({});
   const [hartronSearch, setHartronSearch] = useState("");
+  const [showGate, setShowGate] = useState(false);
+  const [gateName, setGateName] = useState("");
+  const [gateId, setGateId] = useState("");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("mockTestUser");
+    if (!saved) setShowGate(true);
+  }, []);
 
   const handleMockClick = (examSlug: string, mockNum: number) => {
     navigate({ to: `/mock-test/${examSlug}/${mockNum}` });
@@ -157,6 +171,52 @@ export default function MockTestListPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Entrance Gate Modal */}
+      <Dialog open={showGate} onOpenChange={() => {}}>
+        <DialogContent
+          className="max-w-sm"
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle>👤 अपना परिचय दें</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <p className="text-sm text-gray-500">
+              Mock tests शुरू करने से पहले अपना नाम और ID दर्ज करें।
+            </p>
+            <input
+              type="text"
+              placeholder="आपका नाम (Name)"
+              value={gateName}
+              onChange={(e) => setGateName(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+              data-ocid="mock.gate.input"
+            />
+            <input
+              type="text"
+              placeholder="Candidate ID / Roll Number"
+              value={gateId}
+              onChange={(e) => setGateId(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+              data-ocid="mock.gate.input"
+            />
+            <Button
+              className="w-full bg-blue-700 text-white hover:bg-blue-800"
+              disabled={!gateName.trim() || !gateId.trim()}
+              onClick={() => {
+                localStorage.setItem(
+                  "mockTestUser",
+                  JSON.stringify({ name: gateName.trim(), id: gateId.trim() }),
+                );
+                setShowGate(false);
+              }}
+              data-ocid="mock.gate.submit_button"
+            >
+              प्रवेश करें — Enter
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       {/* Hero Header */}
       <div className="bg-gradient-to-r from-[#0d1b4b] to-[#1a3a8f] text-white px-6 py-8">
         <div className="max-w-6xl mx-auto">

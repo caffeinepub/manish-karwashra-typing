@@ -1,87 +1,37 @@
 # Manish Karwashra Typing
 
 ## Current State
-App has MCQ mock tests for SSC, Railway, Banking, HSSC etc. MockTestListPage shows numbered mocks per exam. MCQTest page uses Login → Instructions → Exam flow via existing components.
+Multi-page exam preparation platform with sidebar navigation. MCQ mock tests exist for SSC, Railway, NTPC, Banking, Delhi Police, DSSSB, HSSC, CTET. Result screens show score/percentage but NO answer key or full solution. SSCMCQInterface has a basic result view with Try Again button. ExamModePage has Railway card (id: "railway") - clicking MCQ navigates to `/mcq/railway` which should use TCSMCQInterface. NTPC Graduate/Undergraduate mocks exist. GamesPage has Falling Words and Time Attack games only.
 
 ## Requested Changes (Diff)
 
 ### Add
-- `src/frontend/src/data/questions/hartron_q1.ts` - Already written (400 questions)
-- `src/frontend/src/data/questions/hartron_q2.ts` - Already written (400 questions)
-- `src/frontend/src/data/questions/hartron_q3.ts` - Already written (487 questions)
-- `src/frontend/src/pages/HartronMockPage.tsx` - Full Hartron exam page with 3-step flow
-- Route `/hartron-mock/:mockNumber` in App.tsx
-- Hartron entry in MockTestListPage
+- **Answer Key in all MCQ result screens**: After submitting, show full list of all questions with: question text, user's answer (highlighted green if correct, red if wrong), and correct answer clearly marked
+- **Full Solution panel** in result: below each question in answer key, show which option was correct with a note
+- **New Games in GamesPage**: 
+  1. Car Racing Game - two cars on track, user types words to accelerate their car, opponent auto-races
+  2. Balloon Pop Game - balloons float up with words, type the word to pop balloon before it escapes top
+  3. Boy-Girls Character Selection before games - pick avatar (boy/girl) that shows during play
+  4. Toys Theme typing game - typing room themed with toys, type words that appear on toys
+- **Mock Test Lock** - show a simple name/ID entry gate before accessing mock test list (localStorage-based, no backend needed). User enters name once, saved to localStorage
+- **Certificate** - ensure certificate button appears in ALL MCQ interfaces (SSCMCQInterface, TCSMCQInterface, NTAMCQInterface) after qualifying, not just SSC
 
 ### Modify
-- `src/frontend/src/App.tsx` - Add hartron route
-- `src/frontend/src/pages/MockTestListPage.tsx` - Add Hartron card with 43 mocks (1287 ÷ 30)
-- `src/frontend/src/data/mcqQuestions.ts` - Import and expose HARTRON_QUESTIONS
+- **SSCMCQInterface result screen**: Add scrollable answer key section below score cards. Each row: Q number, question text (truncated), user answer, correct answer, ✓/✗ icon
+- **TCSMCQInterface result screen**: Same answer key addition
+- **NTAMCQInterface result screen**: Same answer key addition  
+- **ExamModePage Railway card**: Change id from "railway" to "railway-ntpc" so MCQ button correctly navigates to `/mcq/railway-ntpc` which uses TCSMCQInterface. Ensure Typing Test button also uses railway-ntpc.
+- **GamesPage**: Add Car, Balloon, Boy-Girls character picker, Toys game alongside existing games
+- **MockTestListPage**: Fix any blurred/disabled-looking mock buttons - ensure all mock number buttons are fully clickable and visible
 
 ### Remove
-Nothing
+- Nothing removed
 
 ## Implementation Plan
-
-### 1. mcqQuestions.ts update
-Import HARTRON_Q1, HARTRON_Q2, HARTRON_Q3, combine into HARTRON_QUESTIONS array. The MCQQuestion type from backend.d.ts has fields: id (BigInt), examCategory, language, questionText, option1, option2, option3, option4, correctAnswer (BigInt).
-
-BUT the new hartron_q1/q2/q3 files use a simpler local type with fields: id (number), question, options (array), correct (number), language, section. So HartronMockPage should use these directly WITHOUT converting to backend MCQQuestion type.
-
-### 2. HartronMockPage.tsx
-This page has 3 steps:
-
-**Step 1: Login/Registration Form**
-- Title: "Hartron CBT Exam - Registration"
-- Fields: Roll Number (text input), Candidate Name (text input), Category (dropdown: General / SC / ST / OBC / EWS)
-- Submit button: "Proceed to Instructions"
-- Mock number shown in header (from URL param)
-- Simple validation (all fields required)
-
-**Step 2: Instructions Page**
-- Candidate info shown at top (Roll No, Name, Category)
-- Full instructions in a card:
-  - Exam: Hartron Computer Proficiency Test
-  - Total Questions: 30
-  - Time: 15 Minutes
-  - Passing Marks: General Category = 15/30 | Reserved Category (SC/ST/OBC/EWS) = 14/30
-  - No Negative Marking
-  - Each question carries 1 mark
-  - Do not refresh the page during exam
-  - Once time is up, exam auto-submits
-  - Questions are from MS Office, Computer Fundamentals, Database, Internet topics
-- Checkbox: "I have read and understood the instructions"
-- Button: "Start Exam" (disabled until checkbox checked)
-
-**Step 3: Exam Interface**
-- Header: "Hartron CBT | Roll: {rollNo} | {name} | {category}" + live countdown timer (15:00)
-- Show question number and text
-- 4 radio option buttons (A, B, C, D)
-- Question palette on right (numbered 1-30, green=answered, white=unanswered, current=blue)
-- Navigation: Previous / Next buttons
-- Submit button (with confirmation dialog)
-- Auto-submit when timer hits 0
-
-**Step 4: Result Screen**
-- Candidate info (Roll No, Name, Category)
-- Score: X / 30
-- Passing marks for their category
-- PASS (green) or FAIL (red) badge
-- Correct answers: X, Wrong answers: Y, Not Attempted: Z
-- No negative marking note
-- "View Solutions" button toggles answer key
-- "Take Another Mock" button
-
-### 3. Seeded question selection (30 per mock)
-Use mock number as seed to deterministically shuffle the 1287 questions and pick first 30.
-Simple seeded shuffle: use a LCG (Linear Congruential Generator) with seed = mockNumber.
-
-### 4. App.tsx route
-Add route: `/hartron-mock/$mockNumber` -> HartronMockPage (with login guard)
-
-### 5. MockTestListPage
-Add a Hartron card with:
-- Color: bg-cyan-600
-- Label: "Hartron CBT"
-- 43 mocks (Mock 1 to Mock 43)
-- Each mock button navigates to `/hartron-mock/{n}`
+1. Fix ExamModePage: change Railway exam id from "railway" to "railway-ntpc" so routing works correctly
+2. Fix MockTestListPage: investigate and fix any CSS blur/opacity issues on mock buttons
+3. Update SSCMCQInterface result: add answer key section (scrollable list, Q text + user answer + correct answer)
+4. Update TCSMCQInterface result: same answer key section
+5. Update NTAMCQInterface result: same answer key section + ensure certificate button visible
+6. Add Mock Lock gate to MockTestListPage: simple name entry modal, stored in localStorage
+7. Add new games to GamesPage: Car Racing, Balloon Pop, Boy-Girls picker, Toys theme game

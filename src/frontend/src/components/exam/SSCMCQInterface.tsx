@@ -234,6 +234,59 @@ export default function SSCMCQInterface({
               </div>
             </div>
           )}
+
+          {/* Answer Key / उत्तर कुंजी */}
+          <div className="mb-5">
+            <h3 className="font-bold text-[#1a237e] mb-2 text-sm">
+              📋 Answer Key / उत्तर कुंजी
+            </h3>
+            <div
+              className="border rounded-lg overflow-y-auto"
+              style={{ maxHeight: 360 }}
+            >
+              {questions.map((q2, i) => {
+                // key fixed
+                const userAns = answers[i];
+                const correctAns = Number(q2.correctAnswer);
+                const isCorrect = userAns === correctAns;
+                const options = [
+                  q2.option1,
+                  q2.option2,
+                  q2.option3,
+                  q2.option4,
+                ];
+                return (
+                  <div
+                    key={q2.questionText.slice(0, 30)}
+                    className={`p-3 border-b text-xs ${isCorrect ? "bg-green-50" : userAns !== undefined ? "bg-red-50" : "bg-gray-50"}`}
+                  >
+                    <div className="font-semibold text-gray-700 mb-1">
+                      Q{i + 1}: {q2.questionText.slice(0, 90)}
+                      {q2.questionText.length > 90 ? "..." : ""}
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <span
+                        className={`font-medium ${isCorrect ? "text-green-700" : "text-red-700"}`}
+                      >
+                        आपका उत्तर:{" "}
+                        {userAns !== undefined
+                          ? options[userAns]
+                          : "Not Answered"}
+                      </span>
+                      {!isCorrect && (
+                        <span className="text-green-700 font-medium">
+                          ✅ सही उत्तर: {options[correctAns]}
+                        </span>
+                      )}
+                      {isCorrect && (
+                        <span className="text-green-600">✅ सही!</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
           <div className="flex gap-3">
             {Math.round((score / questions.length) * 100) >= 60 && (
               <Button
