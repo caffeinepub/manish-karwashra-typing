@@ -9,6 +9,7 @@ import DailyChallengePage from "./pages/DailyChallengePage";
 import DictationPage from "./pages/DictationPage";
 import ExamModePage from "./pages/ExamModePage";
 import GamesPage from "./pages/GamesPage";
+import HartronMockPage from "./pages/HartronMockPage";
 import Home from "./pages/Home";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import LearningTyping from "./pages/LearningTyping";
@@ -16,6 +17,7 @@ import LiveTest from "./pages/LiveTest";
 import LoginPage from "./pages/LoginPage";
 import MCQTest from "./pages/MCQTest";
 import MockTest from "./pages/MockTest";
+import MockTestListPage from "./pages/MockTestListPage";
 import PracticePage from "./pages/PracticePage";
 import ProfilePage from "./pages/ProfilePage";
 import ProgressPage from "./pages/ProgressPage";
@@ -123,6 +125,33 @@ const mockTestExamRoute = createRoute({
     if (!isLoggedIn()) throw redirect({ to: "/login" });
   },
   component: withLayout(MockTest),
+});
+
+const mockListRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/mock-list",
+  beforeLoad: () => {
+    if (!isLoggedIn()) throw redirect({ to: "/login" });
+  },
+  component: withLayout(MockTestListPage),
+});
+
+const mockTestNumberedRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/mock-test/$examSlug/$mockNumber",
+  beforeLoad: () => {
+    if (!isLoggedIn()) throw redirect({ to: "/login" });
+  },
+  component: withLayout(MockTest),
+});
+
+const hartronMockRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/hartron-mock/$mockNumber",
+  beforeLoad: () => {
+    if (!isLoggedIn()) throw redirect({ to: "/login" });
+  },
+  component: withLayout(HartronMockPage),
 });
 
 const learningRoute = createRoute({
@@ -244,6 +273,9 @@ const routeTree = rootRoute.addChildren([
   liveTestExamRoute,
   mockTestRoute,
   mockTestExamRoute,
+  mockListRoute,
+  mockTestNumberedRoute,
+  hartronMockRoute,
   learningRoute,
   resultsRoute,
   typingTestRoute,

@@ -14,8 +14,8 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { paragraphs as allParagraphs } from "../data/paragraphs";
 import { saveExamResult } from "../utils/results";
+import { type ExamBoard, calcTypingScore } from "../utils/typingScoring";
 
-// Use IDs 201-300 from shared paragraphs data
 const DOC_PASSAGES_201_220 = allParagraphs.filter(
   (p) => p.id >= 201 && p.id <= 220,
 );
@@ -34,6 +34,7 @@ const DURATION_OPTIONS = [
 ];
 
 type Phase = "idle" | "typing" | "result";
+type WordStatus = "pending" | "correct" | "wrong";
 
 interface WordSpan {
   id: string;
@@ -56,6 +57,22 @@ function formatTime(seconds: number): string {
 const ICON_BTN_CLS =
   "w-7 h-7 flex items-center justify-center border rounded text-gray-600 hover:bg-gray-200 transition-colors";
 
+// Detect exam board from paragraph category
+function detectExamBoard(category: string | undefined): ExamBoard {
+  if (!category) return "General";
+  const c = category.toLowerCase();
+  if (c.includes("ssc")) return "SSC";
+  if (c.includes("railway") || c.includes("ntpc")) return "Railway";
+  if (c.includes("delhi police")) return "DelhiPolice";
+  if (c.includes("dsssb") || c.includes("deo")) return "DSSSB";
+  if (c.includes("hssc") || c.includes("haryana") || c.includes("hartron"))
+    return "HSSC";
+  if (c.includes("bank")) return "Banking";
+  if (c.includes("teach") || c.includes("ctet") || c.includes("clerk"))
+    return "Teaching";
+  return "General";
+}
+
 export default function TypingTestPage() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [activeGroup, setActiveGroup] = useState(1);
@@ -64,7 +81,12 @@ export default function TypingTestPage() {
   const [language, setLanguage] = useState("English");
 
   const [wordSpans, setWordSpans] = useState<WordSpan[]>([]);
+  const [wordStatuses, setWordStatuses] = useState<WordStatus[]>([]);
   const [typed, setTyped] = useState("");
+  const [currentWordTyped, setCurrentWordTyped] = useState("");
+  const [currentWordIdx, setCurrentWordIdx] = useState(0);
+  const [totalKeyDepressions, setTotalKeyDepressions] = useState(0);
+  const [correctCharsCount, setCorrectCharsCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(DURATION_OPTIONS[1].seconds);
   const [timeTaken, setTimeTaken] = useState(0);
   const [started, setStarted] = useState(false);
@@ -90,12 +112,11 @@ export default function TypingTestPage() {
   const groupIndices = groupPassages.map((_, i) => i);
 
   const words = wordSpans.map((s) => s.word);
-  const typedWords = typed.trim().split(/\s+/);
-  const correctWords = typedWords.filter((w, i) => w === words[i]).length;
-  const wrongWords = typedWords.filter(
-    (w, i) => w !== words[i] && w !== "",
-  ).length;
-  const totalTyped = typedWords.filter((w) => w !== "").length;
+
+  // Derive stats from wordStatuses
+  const correctWords = wordStatuses.filter((s) => s === "correct").length;
+  const wrongWords = wordStatuses.filter((s) => s === "wrong").length;
+  const totalTyped = correctWords + wrongWords;
 
   const elapsedSec =
     timeTaken > 0
@@ -106,20 +127,28 @@ export default function TypingTestPage() {
   const wpm = elapsedSec > 0 ? Math.round((correctWords / elapsedSec) * 60) : 0;
   const accuracy =
     totalTyped > 0 ? Math.round((correctWords / totalTyped) * 100) : 0;
-  const mistakes = wrongWords;
-
-  const currentWordIdx = typed.endsWith(" ")
-    ? typedWords.length
-    : typedWords.length - 1;
 
   function beginTest() {
-    setWordSpans(buildWordSpans(currentPassage));
+    const spans = buildWordSpans(currentPassage);
+    setWordSpans(spans);
+    setWordStatuses(new Array(spans.length).fill("pending") as WordStatus[]);
     setTyped("");
+    setCurrentWordTyped("");
+    setCurrentWordIdx(0);
+    setTotalKeyDepressions(0);
+    setCorrectCharsCount(0);
     setStarted(false);
     setTimeTaken(0);
     setTimeLeft(duration.seconds);
     setPhase("typing");
     setTimeout(() => textareaRef.current?.focus(), 100);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    // Count key depressions (all printable keys + space + backspace)
+    if (e.key.length === 1 || e.key === "Backspace" || e.key === " ") {
+      setTotalKeyDepressions((n) => n + 1);
+    }
   }
 
   function handleType(val: string) {
@@ -138,15 +167,56 @@ export default function TypingTestPage() {
         }
       }, 100);
     }
+
+    const prevVal = typed;
     setTyped(val);
-    const tw = val.trim().split(/\s+/).filter(Boolean);
-    if (tw.length >= words.length && words.length > 0) {
-      setTimeout(() => {
-        if (timerRef.current) clearInterval(timerRef.current);
-        const elapsed = (Date.now() - startTimeRef.current) / 1000;
-        setTimeTaken(elapsed);
-        setPhase("result");
-      }, 500);
+
+    // Detect if space was pressed (new word boundary)
+    const prevEndsWithSpace = prevVal.endsWith(" ");
+    const curEndsWithSpace = val.endsWith(" ");
+
+    if (curEndsWithSpace && !prevEndsWithSpace) {
+      // Space just pressed — finalize current word
+      const parts = val.trimEnd().split(" ");
+      const finishedWordTyped = parts[parts.length - 1] || "";
+      const targetWord = words[currentWordIdx] || "";
+      const status: WordStatus =
+        finishedWordTyped === targetWord ? "correct" : "wrong";
+
+      setWordStatuses((prev) => {
+        const next = [...prev];
+        next[currentWordIdx] = status;
+        return next;
+      });
+
+      // Count correct chars in just-finished word
+      let cc = 0;
+      for (
+        let i = 0;
+        i < Math.min(finishedWordTyped.length, targetWord.length);
+        i++
+      ) {
+        if (finishedWordTyped[i] === targetWord[i]) cc++;
+      }
+      setCorrectCharsCount((n) => n + cc);
+
+      const nextIdx = currentWordIdx + 1;
+      setCurrentWordIdx(nextIdx);
+      setCurrentWordTyped("");
+
+      // Auto-finish if all words done
+      if (nextIdx >= words.length && words.length > 0) {
+        setTimeout(() => {
+          if (timerRef.current) clearInterval(timerRef.current);
+          const elapsed = (Date.now() - startTimeRef.current) / 1000;
+          setTimeTaken(elapsed);
+          setPhase("result");
+        }, 500);
+      }
+    } else {
+      // Update current word typed (chars after last space)
+      const parts = val.split(" ");
+      setCurrentWordTyped(parts[parts.length - 1] || "");
     }
   }
 
@@ -160,6 +230,11 @@ export default function TypingTestPage() {
   function clearTimer() {
     if (timerRef.current) clearInterval(timerRef.current);
     setTyped("");
+    setCurrentWordTyped("");
+    setCurrentWordIdx(0);
+    setWordStatuses([]);
+    setTotalKeyDepressions(0);
+    setCorrectCharsCount(0);
     setStarted(false);
     setTimeTaken(0);
     setPhase("idle");
@@ -182,15 +257,22 @@ export default function TypingTestPage() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional save-once
   useEffect(() => {
     if (phase === "result" && timeTaken > 0) {
-      const finalWpm = Math.round((correctWords / timeTaken) * 60);
-      const finalAcc =
-        totalTyped > 0 ? Math.round((correctWords / totalTyped) * 100) : 0;
+      const timeMin = timeTaken / 60;
+      const scoring = calcTypingScore({
+        examBoard: detectExamBoard(currentPassageObj?.category),
+        totalKeyDepressions,
+        correctWords,
+        wrongWords,
+        totalWords: words.length,
+        correctChars: correctCharsCount,
+        timeMinutes: timeMin,
+      });
       saveExamResult({
         examName: `Typing Test - ${duration.label}`,
         examType: "typing",
-        wpm: finalWpm,
-        accuracy: finalAcc,
-        passed: finalWpm >= 30 && finalAcc >= 80,
+        wpm: scoring.netWPM,
+        accuracy,
+        passed: scoring.isPassed,
       });
     }
   }, [phase, timeTaken]);
@@ -210,7 +292,19 @@ export default function TypingTestPage() {
 
   // ── RESULT PHASE ─────────────────────────────────────────────────
   if (phase === "result") {
-    const qualify = wpm >= 30 && accuracy >= 80;
+    const timeMin = Math.max(timeTaken / 60, 0.01);
+    const examBoard = detectExamBoard(currentPassageObj?.category);
+    const scoring = calcTypingScore({
+      examBoard,
+      totalKeyDepressions,
+      correctWords,
+      wrongWords,
+      totalWords: words.length,
+      correctChars: correctCharsCount,
+      timeMinutes: timeMin,
+    });
+    const qualify = scoring.isPassed;
+
     return (
       <div className="min-h-screen" style={{ background: "#f0f2f5" }}>
         <ExamNavbar />
@@ -222,41 +316,46 @@ export default function TypingTestPage() {
             >
               🏆 Typing Test Result
             </h2>
-            <p className="text-center text-gray-500 text-sm mb-6">
-              {duration.label} Test — {dateStr}
+            <p className="text-center text-gray-500 text-sm mb-4">
+              {duration.label} Test — {dateStr} — {examBoard}
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
               {[
-                { label: "WPM", value: wpm, color: "#1565c0", bg: "#e3f2fd" },
                 {
-                  label: "Accuracy",
-                  value: `${accuracy}%`,
+                  label: "Gross WPM",
+                  value: scoring.grossWPM,
+                  color: "#1565c0",
+                  bg: "#e3f2fd",
+                },
+                {
+                  label: "Net WPM",
+                  value: scoring.netWPM,
                   color: "#2e7d32",
                   bg: "#e8f5e9",
                 },
                 {
                   label: "Mistakes",
-                  value: mistakes,
+                  value: scoring.mistakes,
                   color: "#c62828",
                   bg: "#ffebee",
                 },
                 {
-                  label: "Time Taken",
-                  value: formatTime(Math.round(timeTaken)),
+                  label: "Penalty",
+                  value: scoring.penaltyApplied,
+                  color: "#e65100",
+                  bg: "#fff3e0",
+                },
+                {
+                  label: "Accuracy",
+                  value: `${accuracy}%`,
                   color: "#6a1b9a",
                   bg: "#f3e5f5",
                 },
                 {
-                  label: "Correct Words",
-                  value: correctWords,
+                  label: "Time Taken",
+                  value: formatTime(Math.round(timeTaken)),
                   color: "#00695c",
                   bg: "#e0f2f1",
-                },
-                {
-                  label: "Wrong Words",
-                  value: wrongWords,
-                  color: "#e65100",
-                  bg: "#fff3e0",
                 },
               ].map((s) => (
                 <div
@@ -279,6 +378,18 @@ export default function TypingTestPage() {
                 </div>
               ))}
             </div>
+            {/* Formula display */}
+            <div
+              className="p-3 rounded-lg mb-4 text-xs font-mono"
+              style={{
+                background: "#f5f5f5",
+                color: "#333",
+                border: "1px solid #e0e0e0",
+              }}
+            >
+              <span className="font-semibold text-gray-700">Formula: </span>
+              {scoring.formula}
+            </div>
             <div
               className="p-4 rounded-lg text-center font-semibold mb-6"
               style={{
@@ -288,8 +399,8 @@ export default function TypingTestPage() {
               }}
             >
               {qualify
-                ? "🏅 Congratulations! You have qualified the typing test!"
-                : "💪 Keep practicing! Aur mehnat karein."}
+                ? `🏅 Qualified! Net WPM ${scoring.netWPM} ≥ ${scoring.passThreshold}`
+                : `💪 Keep practicing! Need ${scoring.passThreshold} WPM — Got ${scoring.netWPM}`}
             </div>
             <div className="flex gap-3">
               <button
@@ -452,7 +563,7 @@ export default function TypingTestPage() {
         className="flex border-b"
         style={{ borderColor: "#d0d0d0", height: "280px" }}
       >
-        {/* LEFT PANEL */}
+        {/* LEFT PANEL — Paragraph with word highlighting */}
         <div
           className="flex-1 p-5 border-r"
           style={{
@@ -472,32 +583,86 @@ export default function TypingTestPage() {
               }}
             >
               {wordSpans.map((span, pos) => {
-                const tw = typedWords[pos];
-                let color = "#333333";
-                let fontWeight = "normal";
-                let textDecoration = "none";
-                let background = "transparent";
-                if (tw !== undefined && tw !== "") {
-                  if (tw === span.word) {
-                    color = "#1565c0";
-                    fontWeight = "600";
-                  } else {
-                    color = "#c62828";
-                    fontWeight = "600";
-                  }
+                const status = wordStatuses[pos] || "pending";
+                const isCurrent = pos === currentWordIdx;
+
+                if (isCurrent) {
+                  // Current word: char-by-char coloring
+                  return (
+                    <span
+                      key={span.id}
+                      style={{
+                        background: "#fff9c4",
+                        textDecoration: "underline",
+                        marginRight: "4px",
+                        padding: "0 1px",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {span.word.split("").map((ch, ci) => {
+                        if (ci < currentWordTyped.length) {
+                          const correct = ch === currentWordTyped[ci];
+                          return (
+                            <span
+                              key={`${span.id}-c${ci}`}
+                              style={{ color: correct ? "#1565c0" : "#c62828" }}
+                            >
+                              {ch}
+                            </span>
+                          );
+                        }
+                        return (
+                          <span
+                            key={`${span.id}-c${ci}`}
+                            style={{ color: "#555" }}
+                          >
+                            {ch}
+                          </span>
+                        );
+                      })}
+                    </span>
+                  );
                 }
-                if (pos === currentWordIdx) {
-                  background = "#fff9c4";
-                  textDecoration = "underline";
+
+                // Past words: only use wordStatuses, never cascade
+                if (status === "correct") {
+                  return (
+                    <span
+                      key={span.id}
+                      style={{
+                        color: "#1565c0",
+                        fontWeight: "600",
+                        marginRight: "4px",
+                        padding: "0 1px",
+                      }}
+                    >
+                      {span.word}
+                    </span>
+                  );
                 }
+                if (status === "wrong") {
+                  return (
+                    <span
+                      key={span.id}
+                      style={{
+                        color: "#ffffff",
+                        background: "#c62828",
+                        fontWeight: "600",
+                        marginRight: "4px",
+                        padding: "0 3px",
+                        borderRadius: "2px",
+                      }}
+                    >
+                      {span.word}
+                    </span>
+                  );
+                }
+                // pending (future words)
                 return (
                   <span
                     key={span.id}
                     style={{
-                      color,
-                      fontWeight,
-                      textDecoration,
-                      background,
+                      color: "#333333",
                       marginRight: "4px",
                       padding: "0 1px",
                     }}
@@ -795,6 +960,7 @@ export default function TypingTestPage() {
           }}
           placeholder="Start typing here — timer starts automatically on first keystroke..."
           value={typed}
+          onKeyDown={handleKeyDown}
           onChange={(e) => {
             if (phase === "idle") beginTest();
             handleType(e.target.value);

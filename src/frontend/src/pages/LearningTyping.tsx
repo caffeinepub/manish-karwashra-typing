@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import CharHighlight from "../components/CharHighlight";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { paragraphs as allParagraphs } from "../data/paragraphs";
@@ -146,12 +145,16 @@ function stripBoldMarkers(text: string): string {
 
 // ── Pro Typing Section ────────────────────────────────────────────────────────
 type ProPhase = "setup" | "running" | "result";
+type WordStatus = "pending" | "correct" | "wrong";
 
 function ProTyping() {
   const [language, setLanguage] = useState<"English" | "Hindi">("English");
   const [phase, setPhase] = useState<ProPhase>("setup");
   const [passageIndex, setPassageIndex] = useState(0);
   const [typed, setTyped] = useState("");
+  const [wordStatuses, setWordStatuses] = useState<WordStatus[]>([]);
+  const [currentWordIdx, setCurrentWordIdx] = useState(0);
+  const [currentWordTyped, setCurrentWordTyped] = useState("");
   const [startTime, setStartTime] = useState<number | null>(null);
   const [endTime, setEndTime] = useState<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -160,10 +163,14 @@ function ProTyping() {
   const currentPara =
     filteredParas[passageIndex % Math.max(filteredParas.length, 1)];
   const passageText = currentPara ? stripBoldMarkers(currentPara.text) : "";
-  const passageChars = passageText.split("");
+  const passageWords = passageText.trim().split(/\s+/).filter(Boolean);
 
   const handleStart = () => {
+    const words = passageText.trim().split(/\s+/).filter(Boolean);
     setTyped("");
+    setWordStatuses(new Array(words.length).fill("pending") as WordStatus[]);
+    setCurrentWordIdx(0);
+    setCurrentWordTyped("");
     setStartTime(null);
     setEndTime(null);
     setPhase("running");
@@ -173,11 +180,37 @@ function ProTyping() {
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (phase !== "running") return;
     const val = e.target.value;
+    const prevVal = typed;
     if (!startTime) setStartTime(Date.now());
+
+    const prevEndsWithSpace = prevVal.endsWith(" ");
+    const curEndsWithSpace = val.endsWith(" ");
+
     setTyped(val);
-    if (val.length >= passageText.length) {
-      setEndTime(Date.now());
-      setPhase("result");
+
+    if (curEndsWithSpace && !prevEndsWithSpace) {
+      // Space pressed — finalize current word
+      const parts = val.trimEnd().split(" ");
+      const finishedWordTyped = parts[parts.length - 1] || "";
+      const targetWord = passageWords[currentWordIdx] || "";
+      const status: WordStatus =
+        finishedWordTyped === targetWord ? "correct" : "wrong";
+      setWordStatuses((prev) => {
+        const next = [...prev];
+        next[currentWordIdx] = status;
+        return next;
+      });
+      const nextIdx = currentWordIdx + 1;
+      setCurrentWordIdx(nextIdx);
+      setCurrentWordTyped("");
+      // Auto-finish if last word done
+      if (nextIdx >= passageWords.length) {
+        setEndTime(Date.now());
+        setPhase("result");
+      }
+    } else {
+      const parts = val.split(" ");
+      setCurrentWordTyped(parts[parts.length - 1] || "");
     }
   };
 
@@ -188,6 +221,9 @@ function ProTyping() {
 
   const handleReset = () => {
     setTyped("");
+    setWordStatuses([]);
+    setCurrentWordIdx(0);
+    setCurrentWordTyped("");
     setStartTime(null);
     setEndTime(null);
     setPhase("setup");
@@ -196,6 +232,9 @@ function ProTyping() {
   const handleNewPassage = () => {
     setPassageIndex((i) => i + 1);
     setTyped("");
+    setWordStatuses([]);
+    setCurrentWordIdx(0);
+    setCurrentWordTyped("");
     setStartTime(null);
     setEndTime(null);
     setPhase("setup");
@@ -204,25 +243,20 @@ function ProTyping() {
   const calcStats = () => {
     const elapsed =
       startTime && endTime ? (endTime - startTime) / 1000 / 60 : 1;
-    const typedWords = typed.trim().split(/\s+/).filter(Boolean);
-    const passageWords = passageText.trim().split(/\s+/).filter(Boolean);
-    const wpm = Math.round(typedWords.length / Math.max(elapsed, 0.01));
-    let correctChars = 0;
-    for (let i = 0; i < typed.length; i++) {
-      if (typed[i] === passageText[i]) correctChars++;
-    }
-    const accuracy =
-      typed.length > 0 ? Math.round((correctChars / typed.length) * 100) : 100;
-    const correctWords = typedWords.filter(
-      (w, i) => w === passageWords[i],
-    ).length;
-    const errors = typedWords.length - correctWords;
-    return { wpm, accuracy, correctWords, errors: Math.max(errors, 0) };
+    const correctWords = wordStatuses.filter((s) => s === "correct").length;
+    const errors = wordStatuses.filter((s) => s === "wrong").length;
+    const total = correctWords + errors;
+    const wpm = Math.round(total / Math.max(elapsed, 0.01));
+    const accuracy = total > 0 ? Math.round((correctWords / total) * 100) : 100;
+    return { wpm, accuracy, correctWords, errors };
   };
 
   useEffect(() => {
     if (phase === "setup") {
       setTyped("");
+      setWordStatuses([]);
+      setCurrentWordIdx(0);
+      setCurrentWordTyped("");
       setStartTime(null);
       setEndTime(null);
     }
@@ -310,7 +344,56 @@ function ProTyping() {
             </span>
           </div>
           <div className="bg-gray-50 rounded-xl border-2 border-[#DAA520] p-5 mb-4 font-mono text-sm leading-8 select-none text-black overflow-auto max-h-56">
-            <CharHighlight chars={passageChars} typed={typed} />
+            {passageWords.map((word, wIdx) => {
+              const status = wordStatuses[wIdx] || "pending";
+              const isCurrent = wIdx === currentWordIdx;
+              if (isCurrent) {
+                return (
+                  <span key={word + String(wIdx)}>
+                    <span className="bg-yellow-300 text-gray-900 rounded px-0.5">
+                      {Array.from(word).map((ch, charPos) => {
+                        const charKey = `${wIdx}-${charPos}-${ch}`;
+                        if (charPos < currentWordTyped.length) {
+                          const correct = ch === currentWordTyped[charPos];
+                          return (
+                            <span
+                              key={charKey}
+                              style={{ color: correct ? "#1565c0" : "#c62828" }}
+                            >
+                              {ch}
+                            </span>
+                          );
+                        }
+                        return <span key={charKey}>{ch}</span>;
+                      })}
+                    </span>{" "}
+                  </span>
+                );
+              }
+              if (status === "correct") {
+                return (
+                  <span key={word + String(wIdx)}>
+                    <span className="text-green-700 font-semibold">
+                      {word}
+                    </span>{" "}
+                  </span>
+                );
+              }
+              if (status === "wrong") {
+                return (
+                  <span key={word + String(wIdx)}>
+                    <span className="bg-red-600 text-white rounded px-0.5 font-semibold">
+                      {word}
+                    </span>{" "}
+                  </span>
+                );
+              }
+              return (
+                <span key={word + String(wIdx)}>
+                  <span className="text-gray-500">{word}</span>{" "}
+                </span>
+              );
+            })}
           </div>
           <textarea
             ref={textareaRef}

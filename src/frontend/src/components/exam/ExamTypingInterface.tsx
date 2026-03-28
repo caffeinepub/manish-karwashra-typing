@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { type ExamBoard, calcTypingScore } from "../../utils/typingScoring";
 import { stripBold } from "../BoldText";
 
 interface TypingPassage {
@@ -28,6 +29,7 @@ interface Props {
   backspaceAllowed?: boolean;
   candidateName?: string;
   rollNo?: string;
+  examBoard?: ExamBoard;
   onComplete?: (result: {
     wpm: number;
     accuracy: number;
@@ -38,6 +40,7 @@ interface Props {
 
 type BackspaceMode = "none" | "word" | "full";
 type HighlightColor = "black" | "blue" | "yellow";
+type WordStatus = "pending" | "correct" | "wrong";
 
 export default function ExamTypingInterface({
   examName,
@@ -46,10 +49,16 @@ export default function ExamTypingInterface({
   backspaceAllowed = false,
   candidateName: _candidateName = "Candidate",
   rollNo: _rollNo = "2024001",
+  examBoard = "General",
   onComplete,
 }: Props) {
   const [passageIdx, setPassageIdx] = useState(0);
   const [typed, setTyped] = useState("");
+  const [wordStatuses, setWordStatuses] = useState<WordStatus[]>([]);
+  const [currentWordIdx, setCurrentWordIdx] = useState(0);
+  const [currentWordTyped, setCurrentWordTyped] = useState("");
+  const [totalKeyDepressions, setTotalKeyDepressions] = useState(0);
+  const [correctCharsCount, setCorrectCharsCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(duration);
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
@@ -77,23 +86,14 @@ export default function ExamTypingInterface({
   const formatTime = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
-  const typedWords = typed.trim().split(/\s+/).filter(Boolean);
-  const correctWords = typedWords.filter(
-    (w, i) => w === passageWords[i],
-  ).length;
-  const wrongWords = typedWords.length - correctWords;
+  // Derive stats from wordStatuses
+  const correctWords = wordStatuses.filter((s) => s === "correct").length;
+  const wrongWords = wordStatuses.filter((s) => s === "wrong").length;
   const elapsed = duration - timeLeft;
-  const wpm = elapsed > 0 ? Math.round((typedWords.length / elapsed) * 60) : 0;
-  const correctChars = typed
-    .split("")
-    .filter((c, i) => c === passageText[i]).length;
+  const typedCount = correctWords + wrongWords;
+  const wpm = elapsed > 0 ? Math.round((typedCount / elapsed) * 60) : 0;
   const accuracy =
-    typed.length > 0 ? Math.round((correctChars / typed.length) * 100) : 0;
-
-  // Current word index in passage
-  const typedParts = typed.split(" ");
-  const currentWordIndex = typedParts.length - 1;
-  const currentWordTyped = typedParts[currentWordIndex] || "";
+    typedCount > 0 ? Math.round((correctWords / typedCount) * 100) : 0;
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
@@ -101,6 +101,18 @@ export default function ExamTypingInterface({
       timerRef.current = null;
     }
   }, []);
+
+  // Initialize wordStatuses when passage changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reset on passage change
+  useEffect(() => {
+    setWordStatuses(
+      new Array(passageWords.length).fill("pending") as WordStatus[],
+    );
+    setCurrentWordIdx(0);
+    setCurrentWordTyped("");
+    setTotalKeyDepressions(0);
+    setCorrectCharsCount(0);
+  }, [passageIdx, passageText]);
 
   const handleFinish = useCallback(() => {
     stopTimer();
@@ -125,43 +137,82 @@ export default function ExamTypingInterface({
   useEffect(() => {
     if (autoScroll && passageRef.current) {
       const wordSpans = passageRef.current.querySelectorAll("[data-word]");
-      const curSpan = wordSpans[currentWordIndex];
+      const curSpan = wordSpans[currentWordIdx];
       curSpan?.scrollIntoView({ block: "center", behavior: "smooth" });
     }
-  }, [currentWordIndex, autoScroll]);
+  }, [currentWordIdx, autoScroll]);
 
-  // Auto-finish when all words are typed
+  // Auto-finish when all words typed
   useEffect(() => {
     if (
       !finished &&
       started &&
       passageWords.length > 0 &&
-      typedWords.length >= passageWords.length
+      currentWordIdx >= passageWords.length
     ) {
       const timer = setTimeout(() => handleFinish(), 500);
       return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [typedWords.length, passageWords.length, finished, started, handleFinish]);
+  }, [currentWordIdx, passageWords.length, finished, started, handleFinish]);
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (finished) return;
+    const val = e.target.value;
+    const prevVal = typed;
     if (!started) setStarted(true);
-    setTyped(e.target.value);
+
+    const prevEndsWithSpace = prevVal.endsWith(" ");
+    const curEndsWithSpace = val.endsWith(" ");
+
+    setTyped(val);
+
+    if (curEndsWithSpace && !prevEndsWithSpace) {
+      // Space pressed — finalize current word
+      const parts = val.trimEnd().split(" ");
+      const finishedWordTyped = parts[parts.length - 1] || "";
+      const targetWord = passageWords[currentWordIdx] || "";
+      const status: WordStatus =
+        finishedWordTyped === targetWord ? "correct" : "wrong";
+
+      setWordStatuses((prev) => {
+        const next = [...prev];
+        next[currentWordIdx] = status;
+        return next;
+      });
+
+      // Count correct chars
+      let cc = 0;
+      for (
+        let i = 0;
+        i < Math.min(finishedWordTyped.length, targetWord.length);
+        i++
+      ) {
+        if (finishedWordTyped[i] === targetWord[i]) cc++;
+      }
+      setCorrectCharsCount((n) => n + cc);
+      setCurrentWordIdx((idx) => idx + 1);
+      setCurrentWordTyped("");
+    } else {
+      const parts = val.split(" ");
+      setCurrentWordTyped(parts[parts.length - 1] || "");
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Track key depressions
+    if (e.key.length === 1 || e.key === "Backspace" || e.key === " ") {
+      setTotalKeyDepressions((n) => n + 1);
+    }
+
     if (e.key === "Backspace") {
       if (backspaceMode === "none") {
         e.preventDefault();
       } else if (backspaceMode === "word") {
-        // Prevent backspace if would go back past start of current word (i.e., last char is space)
         if (typed.length > 0 && typed[typed.length - 1] === " ") {
           e.preventDefault();
         }
       }
     }
-    // Keyboard shortcuts
     if (e.altKey) {
       if (e.key === "d") {
         e.preventDefault();
@@ -195,7 +246,6 @@ export default function ExamTypingInterface({
     setIsFullScreen((f) => !f);
   };
 
-  // Highlight color class for current word box
   const currentWordBg = {
     black: "bg-black text-white",
     blue: "bg-blue-700 text-white",
@@ -203,6 +253,17 @@ export default function ExamTypingInterface({
   }[highlightColor];
 
   if (finished) {
+    const timeMin = Math.max((duration - timeLeft) / 60, 0.01);
+    const scoring = calcTypingScore({
+      examBoard,
+      totalKeyDepressions,
+      correctWords,
+      wrongWords,
+      totalWords: passageWords.length,
+      correctChars: correctCharsCount,
+      timeMinutes: timeMin,
+    });
+
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
         <div
@@ -224,46 +285,72 @@ export default function ExamTypingInterface({
                   Typing Test Complete / टाइपिंग परीक्षा समाप्त
                 </h2>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                 <div className="bg-blue-50 rounded p-3 text-center">
-                  <div className="text-2xl font-bold text-blue-600">{wpm}</div>
-                  <div className="text-xs text-gray-500">WPM</div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {scoring.grossWPM}
+                  </div>
+                  <div className="text-xs text-gray-500">Gross WPM</div>
                 </div>
                 <div className="bg-green-50 rounded p-3 text-center">
                   <div className="text-2xl font-bold text-green-600">
+                    {scoring.netWPM}
+                  </div>
+                  <div className="text-xs text-gray-500">Net WPM</div>
+                </div>
+                <div className="bg-emerald-50 rounded p-3 text-center">
+                  <div className="text-2xl font-bold text-emerald-600">
                     {accuracy}%
                   </div>
                   <div className="text-xs text-gray-500">Accuracy</div>
                 </div>
-                <div className="bg-emerald-50 rounded p-3 text-center">
-                  <div className="text-2xl font-bold text-emerald-600">
-                    {correctWords}
-                  </div>
-                  <div className="text-xs text-gray-500">Correct Words</div>
-                </div>
                 <div className="bg-red-50 rounded p-3 text-center">
                   <div className="text-2xl font-bold text-red-600">
-                    {wrongWords}
+                    {scoring.mistakes}
                   </div>
                   <div className="text-xs text-gray-500">Errors</div>
                 </div>
               </div>
 
+              {/* Formula */}
+              <div className="mb-4 p-3 bg-gray-50 rounded border text-xs font-mono text-gray-700 break-words">
+                <span className="font-semibold">Formula: </span>
+                {scoring.formula}
+              </div>
+
+              {/* Pass/Fail */}
+              <div
+                className="mb-4 p-3 rounded text-center font-semibold text-sm"
+                style={{
+                  background: scoring.isPassed ? "#e8f5e9" : "#ffebee",
+                  color: scoring.isPassed ? "#2e7d32" : "#c62828",
+                  border: `1px solid ${scoring.isPassed ? "#a5d6a7" : "#ef9a9a"}`,
+                }}
+              >
+                {scoring.isPassed
+                  ? `🏅 Qualified! Net WPM ${scoring.netWPM} ≥ ${scoring.passThreshold}`
+                  : `💪 Need ${scoring.passThreshold} WPM — Got ${scoring.netWPM}. Keep practicing!`}
+              </div>
+
+              {/* Word analysis */}
               <div className="mb-4">
                 <h3 className="text-sm font-semibold text-gray-700 mb-2">
                   Word Analysis:
                 </h3>
                 <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto bg-gray-50 rounded p-3">
-                  {typedWords.map((word, i) => (
+                  {wordStatuses.map((status, i) => (
                     <span
-                      key={`word-${i}-${word.slice(0, 3)}`}
+                      // biome-ignore lint/suspicious/noArrayIndexKey: word analysis list
+                      key={`word-${i}`}
                       className={`px-2 py-0.5 rounded text-xs font-mono border ${
-                        word === passageWords[i]
+                        status === "correct"
                           ? "bg-green-50 text-green-800 border-green-300"
-                          : "bg-red-50 text-red-800 border-red-300"
+                          : status === "wrong"
+                            ? "bg-red-50 text-red-800 border-red-300"
+                            : "bg-gray-100 text-gray-500 border-gray-200"
                       }`}
                     >
-                      {word}
+                      {passageWords[i]}
                     </span>
                   ))}
                 </div>
@@ -273,6 +360,15 @@ export default function ExamTypingInterface({
                 <Button
                   onClick={() => {
                     setTyped("");
+                    setWordStatuses(
+                      new Array(passageWords.length).fill(
+                        "pending",
+                      ) as WordStatus[],
+                    );
+                    setCurrentWordIdx(0);
+                    setCurrentWordTyped("");
+                    setTotalKeyDepressions(0);
+                    setCorrectCharsCount(0);
                     setTimeLeft(duration);
                     setStarted(false);
                     setFinished(false);
@@ -287,6 +383,10 @@ export default function ExamTypingInterface({
                   onClick={() => {
                     setPassageIdx((p) => p + 1);
                     setTyped("");
+                    setCurrentWordIdx(0);
+                    setCurrentWordTyped("");
+                    setTotalKeyDepressions(0);
+                    setCorrectCharsCount(0);
                     setTimeLeft(duration);
                     setStarted(false);
                     setFinished(false);
@@ -357,20 +457,13 @@ export default function ExamTypingInterface({
             }}
           >
             {highlightEnabled ? (
-              // Word-level highlight view
               <span>
                 {passageWords.map((word, wIdx) => {
-                  let wordClass = "text-gray-700";
-                  if (wIdx < currentWordIndex) {
-                    // Already typed word
-                    wordClass =
-                      typedWords[wIdx] === word
-                        ? "text-gray-800"
-                        : "text-red-500 underline decoration-red-400";
-                  } else if (wIdx === currentWordIndex) {
-                    // Current word being typed - highlight it
-                    wordClass = `${currentWordBg} px-0.5 rounded`;
-                    // Show partial correctness within current word
+                  const status = wordStatuses[wIdx] || "pending";
+                  const isCurrent = wIdx === currentWordIdx;
+
+                  if (isCurrent) {
+                    // Current word: char-by-char
                     return (
                       <span key={word + String(wIdx)}>
                         <span
@@ -399,9 +492,38 @@ export default function ExamTypingInterface({
                       </span>
                     );
                   }
+
+                  // Past/future words — use wordStatuses ONLY
+                  if (status === "correct") {
+                    return (
+                      <span key={word + String(wIdx)}>
+                        <span
+                          data-word={wIdx}
+                          className="text-blue-700 font-semibold"
+                        >
+                          {word}
+                        </span>
+                        <span> </span>
+                      </span>
+                    );
+                  }
+                  if (status === "wrong") {
+                    return (
+                      <span key={word + String(wIdx)}>
+                        <span
+                          data-word={wIdx}
+                          className="bg-red-600 text-white rounded px-0.5 font-semibold"
+                        >
+                          {word}
+                        </span>
+                        <span> </span>
+                      </span>
+                    );
+                  }
+                  // pending
                   return (
                     <span key={word + String(wIdx)}>
-                      <span data-word={wIdx} className={wordClass}>
+                      <span data-word={wIdx} className="text-gray-700">
                         {word}
                       </span>
                       <span> </span>
@@ -459,8 +581,8 @@ export default function ExamTypingInterface({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Submit Typing Test?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    WPM: {wpm} | Accuracy: {accuracy}% | Words Typed:{" "}
-                    {typedWords.length}
+                    Net WPM: {wpm} | Accuracy: {accuracy}% | Words:{" "}
+                    {correctWords + wrongWords}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -490,6 +612,31 @@ export default function ExamTypingInterface({
               {formatTime(timeLeft)}
             </div>
             <div className="text-xs text-gray-500 mt-0.5">Time Left</div>
+          </div>
+
+          {/* Live stats */}
+          <div className="p-3 border-b border-gray-200">
+            <div className="text-xs text-gray-500 mb-1">Live Stats</div>
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-600">Net WPM</span>
+                <span className="font-bold text-blue-600">{wpm}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-600">Accuracy</span>
+                <span className="font-bold text-green-600">{accuracy}%</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-600">Correct</span>
+                <span className="font-bold text-emerald-600">
+                  {correctWords}
+                </span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-600">Errors</span>
+                <span className="font-bold text-red-600">{wrongWords}</span>
+              </div>
+            </div>
           </div>
 
           {/* Font Size */}
@@ -528,7 +675,6 @@ export default function ExamTypingInterface({
               Exam.
             </p>
 
-            {/* Backspace mode */}
             <div className="mb-3">
               <div className="text-xs text-gray-600 mb-1 font-medium">
                 Backspace mode:
@@ -563,7 +709,6 @@ export default function ExamTypingInterface({
               ))}
             </div>
 
-            {/* Checkboxes */}
             <div className="mb-3 space-y-1">
               <label className="flex items-center gap-1.5 cursor-pointer">
                 <input
@@ -612,7 +757,6 @@ export default function ExamTypingInterface({
               Highlighter Colour
             </div>
 
-            {/* Highlighter color */}
             <div className="space-y-1">
               {(["black", "blue", "yellow"] as HighlightColor[]).map(
                 (color) => (
@@ -648,7 +792,6 @@ export default function ExamTypingInterface({
               )}
             </div>
 
-            {/* Stop button */}
             <div className="mt-4">
               <AlertDialog>
                 <AlertDialogTrigger asChild>

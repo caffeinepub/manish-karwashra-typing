@@ -1,55 +1,87 @@
-# Manish Karwashra Typing - Major Navigation Restructure
+# Manish Karwashra Typing
 
 ## Current State
-
-The app currently has:
-- Top header navigation (Header.tsx) with login/register buttons
-- Pages: Home, LoginPage, TypingPractice, MCQTest, LiveTest, MockTest, LearningTyping, ResultsHistory, AdminPanel
-- Routes: /, /login, /typing/:examCategory, /mcq/:examCategory, /live-test, /live-test/:examSlug, /mock-test, /mock-test/:examSlug, /learning, /results, /admin
-- Components: ExamTypingInterface, NTAMCQInterface, SSCMCQInterface, TCSMCQInterface, Certificate, UserIdentityHeader, etc.
-- 100+ typing paragraphs in LearningTyping, 500+ MCQs in MCQTest/MockTest
+App has MCQ mock tests for SSC, Railway, Banking, HSSC etc. MockTestListPage shows numbered mocks per exam. MCQTest page uses Login → Instructions → Exam flow via existing components.
 
 ## Requested Changes (Diff)
 
 ### Add
-- **SideDrawer/Sidebar layout component**: Permanent left sidebar on desktop, hamburger slide-out drawer on mobile. Wraps all authenticated pages.
-- **New pages**:
-  - `/practice` - Practice lessons (Beginner, Home Row, Top Row, Bottom Row, Number, Symbol, Capital Letters, Word, Sentence, Paragraph practice)
-  - `/typing-test` - Typing test with modes: 10s, 5min, 15min, 20min, Word Test (500/1000/2000), Paragraph Test, Custom Text. Detailed result card: WPM, Accuracy, Mistakes, Time, Correct Words, Wrong Words
-  - `/exam-mode` - Exam typing mode: SSC, DSSSB, Delhi Police, Court, Banking, Railway, State, Custom (links to existing exam simulation)
-  - `/games` - Typing games: Falling Words, Word Shooting, Typing Race, Time Attack, Keyboard Jump, Multiplayer Typing Race
-  - `/dictation` - Dictation mode page
-  - `/progress` - Progress/Analyse: Daily/Weekly/Monthly reports, WPM graph, Accuracy graph, Mistake Analysis, Weak Keys, Typing History, Performance Dashboard
-  - `/settings` - Settings: Dark Mode, Font Size/Style, Keyboard Sound, Key Highlight, Language, Theme/Background, Keyboard Layout, Full Screen
-  - `/profile` - Profile: User info, Results, Certificates, Ranking, Achievements, Logout
-  - `/admin-login` - Dedicated admin login page (username + password)
-- **Home page menu cards**: 11 menu cards for Start Typing Test, Practice Lessons, Exam Typing Mode, Typing Games, Dictation Mode, Progress Report, Leaderboard, Daily Challenge, Certificate/Result, Settings, Profile/Login
-- **Admin special features**: User management dashboard, content control panel (bulk MCQ import), statistics view
+- `src/frontend/src/data/questions/hartron_q1.ts` - Already written (400 questions)
+- `src/frontend/src/data/questions/hartron_q2.ts` - Already written (400 questions)
+- `src/frontend/src/data/questions/hartron_q3.ts` - Already written (487 questions)
+- `src/frontend/src/pages/HartronMockPage.tsx` - Full Hartron exam page with 3-step flow
+- Route `/hartron-mock/:mockNumber` in App.tsx
+- Hartron entry in MockTestListPage
 
 ### Modify
-- **App.tsx**: Add all new routes, wrap authenticated routes with sidebar layout
-- **Home.tsx**: Add 11 menu cards section below the existing Live Test section + exam cards. Keep existing content (metallic banner, Live Test section, exam cards, footer)
-- **Header.tsx**: Integrate hamburger menu trigger for mobile drawer
-- **AdminPanel.tsx**: Add user management section and stats dashboard
-- **Live test page**: Add as separate page in sidebar nav
-- **Mock test page**: Add as separate page in sidebar nav
+- `src/frontend/src/App.tsx` - Add hartron route
+- `src/frontend/src/pages/MockTestListPage.tsx` - Add Hartron card with 43 mocks (1287 ÷ 30)
+- `src/frontend/src/data/mcqQuestions.ts` - Import and expose HARTRON_QUESTIONS
 
 ### Remove
-- Old top-navbar-only navigation pattern (replace with sidebar)
+Nothing
 
 ## Implementation Plan
 
-1. Create `AppLayout.tsx` - wrapper with left sidebar (desktop) + Sheet drawer (mobile), containing all nav items
-2. Create `SideNav.tsx` - navigation items: Home, Start Test, Practice, Exam Mode, Mock Test, Live Test, Games, Dictation, Progress, Leaderboard, Daily Challenge, Certificate, Profile, Settings, Admin
-3. Update `App.tsx` - add new routes, wrap protected routes in AppLayout
-4. Create `TypingTestPage.tsx` - 7 test mode options with full result card
-5. Create `PracticePage.tsx` - 10 lesson categories with interactive keyboard lessons
-6. Create `ExamModePage.tsx` - 8 exam options linking to existing exam simulation
-7. Create `GamesPage.tsx` - 6 typing games (Falling Words, Word Shooting, etc.)
-8. Create `DictationPage.tsx` - basic dictation mode
-9. Create `ProgressPage.tsx` - WPM/Accuracy charts, typing history, weak keys analysis
-10. Create `SettingsPage.tsx` - all settings options with local storage persistence
-11. Create `ProfilePage.tsx` - user info, results, certificates, achievements
-12. Create `AdminLoginPage.tsx` - admin credentials page
-13. Update `AdminPanel.tsx` - add user management + stats
-14. Update `Home.tsx` - add 11 menu cards
+### 1. mcqQuestions.ts update
+Import HARTRON_Q1, HARTRON_Q2, HARTRON_Q3, combine into HARTRON_QUESTIONS array. The MCQQuestion type from backend.d.ts has fields: id (BigInt), examCategory, language, questionText, option1, option2, option3, option4, correctAnswer (BigInt).
+
+BUT the new hartron_q1/q2/q3 files use a simpler local type with fields: id (number), question, options (array), correct (number), language, section. So HartronMockPage should use these directly WITHOUT converting to backend MCQQuestion type.
+
+### 2. HartronMockPage.tsx
+This page has 3 steps:
+
+**Step 1: Login/Registration Form**
+- Title: "Hartron CBT Exam - Registration"
+- Fields: Roll Number (text input), Candidate Name (text input), Category (dropdown: General / SC / ST / OBC / EWS)
+- Submit button: "Proceed to Instructions"
+- Mock number shown in header (from URL param)
+- Simple validation (all fields required)
+
+**Step 2: Instructions Page**
+- Candidate info shown at top (Roll No, Name, Category)
+- Full instructions in a card:
+  - Exam: Hartron Computer Proficiency Test
+  - Total Questions: 30
+  - Time: 15 Minutes
+  - Passing Marks: General Category = 15/30 | Reserved Category (SC/ST/OBC/EWS) = 14/30
+  - No Negative Marking
+  - Each question carries 1 mark
+  - Do not refresh the page during exam
+  - Once time is up, exam auto-submits
+  - Questions are from MS Office, Computer Fundamentals, Database, Internet topics
+- Checkbox: "I have read and understood the instructions"
+- Button: "Start Exam" (disabled until checkbox checked)
+
+**Step 3: Exam Interface**
+- Header: "Hartron CBT | Roll: {rollNo} | {name} | {category}" + live countdown timer (15:00)
+- Show question number and text
+- 4 radio option buttons (A, B, C, D)
+- Question palette on right (numbered 1-30, green=answered, white=unanswered, current=blue)
+- Navigation: Previous / Next buttons
+- Submit button (with confirmation dialog)
+- Auto-submit when timer hits 0
+
+**Step 4: Result Screen**
+- Candidate info (Roll No, Name, Category)
+- Score: X / 30
+- Passing marks for their category
+- PASS (green) or FAIL (red) badge
+- Correct answers: X, Wrong answers: Y, Not Attempted: Z
+- No negative marking note
+- "View Solutions" button toggles answer key
+- "Take Another Mock" button
+
+### 3. Seeded question selection (30 per mock)
+Use mock number as seed to deterministically shuffle the 1287 questions and pick first 30.
+Simple seeded shuffle: use a LCG (Linear Congruential Generator) with seed = mockNumber.
+
+### 4. App.tsx route
+Add route: `/hartron-mock/$mockNumber` -> HartronMockPage (with login guard)
+
+### 5. MockTestListPage
+Add a Hartron card with:
+- Color: bg-cyan-600
+- Label: "Hartron CBT"
+- 43 mocks (Mock 1 to Mock 43)
+- Each mock button navigates to `/hartron-mock/{n}`

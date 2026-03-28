@@ -3,6 +3,17 @@ import { BANKING_FULL } from "./questions/banking";
 import { COMPUTER_FULL } from "./questions/computer";
 import { CTET_FULL } from "./questions/ctet";
 import { HARYANA_FULL } from "./questions/haryana";
+import {
+  BASIC_GK_QUESTIONS,
+  COMPUTER_EXTRA_QUESTIONS,
+  ECONOMY_QUESTIONS,
+  HARYANA_EXTRA_QUESTIONS,
+  HISTORY_QUESTIONS,
+  INDIABIX_ALL,
+  POLITY_QUESTIONS,
+  SCIENCE_QUESTIONS,
+  SPORTS_QUESTIONS,
+} from "./questions/indiabix_gk";
 import { RAILWAY_FULL } from "./questions/railway";
 import { SSC_FULL } from "./questions/ssc";
 
@@ -44,6 +55,7 @@ export const ALL_QUESTIONS: MCQQuestion[] = [
   ...BANKING_FULL,
   ...COMPUTER_FULL,
   ...HARYANA_FULL,
+  ...INDIABIX_ALL,
 ];
 
 export const GENERAL_QUESTIONS: MCQQuestion[] = [
@@ -89,32 +101,53 @@ export function getQuestionsForExam(examId: string): MCQQuestion[] {
   let pool: MCQQuestion[];
 
   if (examId.includes("railway") || examId.includes("ntpc")) {
-    pool = [...RAILWAY_FULL, ...SSC_FULL.slice(20, 40)];
+    pool = [
+      ...RAILWAY_FULL,
+      ...SSC_FULL.slice(20, 40),
+      ...SCIENCE_QUESTIONS,
+      ...BASIC_GK_QUESTIONS,
+    ];
   } else if (
     examId.includes("ctet") ||
     examId.includes("nta") ||
     examId.includes("teaching")
   ) {
-    pool = CTET_FULL;
+    pool = [...CTET_FULL, ...HISTORY_QUESTIONS, ...POLITY_QUESTIONS];
   } else if (
     examId.includes("banking") ||
     examId.includes("ibps") ||
     examId.includes("sbi")
   ) {
-    pool = [...BANKING_FULL, ...SSC_FULL.slice(20, 35)];
+    pool = [...BANKING_FULL, ...SSC_FULL.slice(20, 35), ...ECONOMY_QUESTIONS];
   } else if (examId.includes("hssc") || examId.includes("haryana")) {
-    pool = [...HARYANA_FULL, ...SSC_FULL.slice(0, 20)];
+    pool = [
+      ...HARYANA_FULL,
+      ...HARYANA_EXTRA_QUESTIONS,
+      ...SSC_FULL.slice(0, 20),
+    ];
   } else if (
     examId.includes("hartron") ||
     examId.includes("deo") ||
     examId.includes("computer")
   ) {
-    pool = COMPUTER_FULL;
+    pool = [...COMPUTER_FULL, ...COMPUTER_EXTRA_QUESTIONS];
   } else if (examId.includes("dsssb") || examId.includes("delhi")) {
-    pool = [...SSC_FULL, ...COMPUTER_FULL.slice(0, 20)];
+    pool = [
+      ...SSC_FULL,
+      ...COMPUTER_FULL.slice(0, 20),
+      ...POLITY_QUESTIONS,
+      ...HISTORY_QUESTIONS,
+    ];
   } else {
     // SSC CGL, CHSL, MTS and generic
-    pool = SSC_FULL;
+    pool = [
+      ...SSC_FULL,
+      ...HISTORY_QUESTIONS,
+      ...BASIC_GK_QUESTIONS,
+      ...POLITY_QUESTIONS,
+      ...SCIENCE_QUESTIONS,
+      ...SPORTS_QUESTIONS,
+    ];
   }
 
   // Mix in admin questions
@@ -133,6 +166,7 @@ export function getQuestionStats() {
     CTET: CTET_FULL.length,
     Computer: COMPUTER_FULL.length,
     HaryanaGK: HARYANA_FULL.length,
+    IndiaBIX_GK: INDIABIX_ALL.length,
     Total: ALL_QUESTIONS.length,
     Admin: getAdminQuestions().length,
   };

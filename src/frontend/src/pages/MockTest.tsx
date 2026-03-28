@@ -114,14 +114,26 @@ const slugToExam: Record<string, string> = {
   teaching: "SSC CGL",
 };
 
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default function MockTest() {
   const params = useParams({ strict: false });
   const examSlugParam = (params as Record<string, string>)?.examSlug;
+  const mockNumber = Number.parseInt((params as any)?.mockNumber || "0");
   const [exam, setExam] = useState(
     examSlugParam ? slugToExam[examSlugParam] || "SSC CGL" : "SSC CGL",
   );
   const [phase, setPhase] = useState<Phase>(
-    examSlugParam ? "instructions" : "select",
+    examSlugParam || mockNumber > 0 ? "instructions" : "select",
   );
   const [paraIndex, setParaIndex] = useState(0);
 
@@ -323,7 +335,7 @@ export default function MockTest() {
         <main className="flex-1 py-8 px-4">
           <div className="max-w-2xl mx-auto">
             <h1 className="text-2xl font-bold text-[#0d1b4b] mb-6">
-              Mock Test
+              {mockNumber > 0 ? `Mock Test #${mockNumber}` : "Mock Test"}
             </h1>
             <div className="bg-white rounded-xl shadow p-8 border-2 border-[#DAA520]">
               <h2 className="text-lg font-semibold mb-6">
@@ -606,7 +618,10 @@ export default function MockTest() {
 
   if (phase === "exam") {
     const examCfg = getExamConfig(examSlug);
-    const mcqQuestions = getQuestionsForExam(examSlug);
+    const mcqQuestions =
+      mockNumber > 0
+        ? seededShuffle(getQuestionsForExam(examSlug), mockNumber)
+        : getQuestionsForExam(examSlug);
     // MCQ-only exams render the appropriate portal interface
     if (examCfg.mode === "mcq") {
       if (examCfg.examType === "nta") {

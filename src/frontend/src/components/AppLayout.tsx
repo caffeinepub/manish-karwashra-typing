@@ -39,8 +39,8 @@ const NAV_ITEMS = [
 const NAV_EXTRA = [
   { path: "/live-test", label: "Live Test", icon: Zap, color: "text-red-400" },
   {
-    path: "/mock-test",
-    label: "Mock Test",
+    path: "/mock-list",
+    label: "Mock Tests",
     icon: ClipboardList,
     color: "text-blue-400",
   },
