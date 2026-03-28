@@ -27,10 +27,21 @@ const DOC_PASSAGES_261_300 = allParagraphs.filter(
 );
 
 const DURATION_OPTIONS = [
+  { label: "1 Minute", seconds: 60 },
+  { label: "2 Minutes", seconds: 120 },
+  { label: "3 Minutes", seconds: 180 },
   { label: "5 Minutes", seconds: 300 },
   { label: "10 Minutes", seconds: 600 },
   { label: "15 Minutes", seconds: 900 },
   { label: "20 Minutes", seconds: 1200 },
+];
+
+const WORD_COUNT_OPTIONS = [
+  { label: "50 Words", count: 50 },
+  { label: "100 Words", count: 100 },
+  { label: "200 Words", count: 200 },
+  { label: "500 Words", count: 500 },
+  { label: "All Words", count: 0 },
 ];
 
 type Phase = "idle" | "typing" | "result";
@@ -77,8 +88,9 @@ export default function TypingTestPage() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [activeGroup, setActiveGroup] = useState(1);
   const [paraIndex, setParaIndex] = useState(0);
-  const [duration, setDuration] = useState(DURATION_OPTIONS[1]);
+  const [duration, setDuration] = useState(DURATION_OPTIONS[3]);
   const [language, setLanguage] = useState("English");
+  const [wordCountOption, setWordCountOption] = useState(WORD_COUNT_OPTIONS[4]);
 
   const [wordSpans, setWordSpans] = useState<WordSpan[]>([]);
   const [wordStatuses, setWordStatuses] = useState<WordStatus[]>([]);
@@ -87,7 +99,7 @@ export default function TypingTestPage() {
   const [currentWordIdx, setCurrentWordIdx] = useState(0);
   const [totalKeyDepressions, setTotalKeyDepressions] = useState(0);
   const [correctCharsCount, setCorrectCharsCount] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(DURATION_OPTIONS[1].seconds);
+  const [timeLeft, setTimeLeft] = useState(DURATION_OPTIONS[3].seconds);
   const [timeTaken, setTimeTaken] = useState(0);
   const [started, setStarted] = useState(false);
 
@@ -101,7 +113,9 @@ export default function TypingTestPage() {
         ? DOC_PASSAGES_201_220
         : group === 2
           ? DOC_PASSAGES_221_260
-          : DOC_PASSAGES_261_300;
+          : group === 3
+            ? DOC_PASSAGES_261_300
+            : allParagraphs.filter((p) => p.category === "society");
     const filtered = pool.filter((p) => p.language === language);
     return filtered.length > 0 ? filtered : pool;
   };
@@ -130,8 +144,12 @@ export default function TypingTestPage() {
 
   function beginTest() {
     const spans = buildWordSpans(currentPassage);
-    setWordSpans(spans);
-    setWordStatuses(new Array(spans.length).fill("pending") as WordStatus[]);
+    const limitedSpans =
+      wordCountOption.count > 0 ? spans.slice(0, wordCountOption.count) : spans;
+    setWordSpans(limitedSpans);
+    setWordStatuses(
+      new Array(limitedSpans.length).fill("pending") as WordStatus[],
+    );
     setTyped("");
     setCurrentWordTyped("");
     setCurrentWordIdx(0);
@@ -510,8 +528,8 @@ export default function TypingTestPage() {
         <span className="font-bold text-sm mr-4" style={{ color: "#1a237e" }}>
           All Exam
         </span>
-        <div className="flex gap-2">
-          {[1, 2, 3].map((g) => (
+        <div className="flex gap-2 flex-wrap">
+          {[1, 2, 3, 4].map((g) => (
             <button
               key={g}
               type="button"
@@ -524,7 +542,7 @@ export default function TypingTestPage() {
               }}
               data-ocid={`typing.group.${g}.tab`}
             >
-              Group {g}
+              {g === 4 ? "Society" : `Group ${g}`}
             </button>
           ))}
         </div>
@@ -821,28 +839,59 @@ export default function TypingTestPage() {
         className="flex items-center gap-2 px-3 py-1.5 border-b flex-wrap"
         style={{ background: "#f5f5f5", borderColor: "#d0d0d0" }}
       >
-        <span className="text-xs font-semibold text-gray-700">Duration:</span>
-        <select
-          value={duration.seconds}
-          onChange={(e) => {
-            const opt = DURATION_OPTIONS.find(
-              (d) => d.seconds === Number(e.target.value),
+        <span className="text-xs font-semibold text-gray-700">Minutes:</span>
+        <div className="flex gap-1 flex-wrap">
+          {[1, 2, 3, 5, 10, 15, 20].map((m) => {
+            const sec = m * 60;
+            const isActive = duration.seconds === sec;
+            return (
+              <button
+                key={m}
+                type="button"
+                onClick={() => {
+                  const opt = DURATION_OPTIONS.find(
+                    (d) => d.seconds === sec,
+                  ) || {
+                    label: `${m} Minute${m > 1 ? "s" : ""}`,
+                    seconds: sec,
+                  };
+                  setDuration(opt);
+                  setTimeLeft(sec);
+                }}
+                className="px-2 py-0.5 rounded border text-xs font-semibold transition-colors"
+                style={{
+                  background: isActive ? "#1565c0" : "transparent",
+                  color: isActive ? "#fff" : "#1565c0",
+                  borderColor: "#1565c0",
+                }}
+                data-ocid={`typing.min.${m}`}
+              >
+                {m}m
+              </button>
             );
-            if (opt) {
-              setDuration(opt);
-              setTimeLeft(opt.seconds);
-            }
-          }}
-          className="border rounded px-2 py-0.5 text-xs font-semibold"
-          style={{ borderColor: "#b0b0b0", color: "#1a237e" }}
-          data-ocid="typing.duration.select"
-        >
-          {DURATION_OPTIONS.map((d) => (
-            <option key={d.seconds} value={d.seconds}>
-              {d.label}
-            </option>
+          })}
+        </div>
+        <span className="text-xs font-semibold text-gray-700 ml-2">Words:</span>
+        <div className="flex gap-1 flex-wrap">
+          {WORD_COUNT_OPTIONS.map((opt) => (
+            <button
+              key={opt.label}
+              type="button"
+              onClick={() => setWordCountOption(opt)}
+              className="px-2 py-0.5 rounded border text-xs font-semibold transition-colors"
+              style={{
+                background:
+                  wordCountOption.label === opt.label
+                    ? "#388e3c"
+                    : "transparent",
+                color: wordCountOption.label === opt.label ? "#fff" : "#388e3c",
+                borderColor: "#388e3c",
+              }}
+            >
+              {opt.label}
+            </button>
           ))}
-        </select>
+        </div>
         <button
           type="button"
           onClick={() => changePara("next")}

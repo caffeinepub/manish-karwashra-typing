@@ -23,7 +23,8 @@ export interface Paragraph {
     | "typing-skills"
     | "advanced-tech"
     | "social-issues"
-    | "environment";
+    | "environment"
+    | "society";
   language: "Hindi" | "English";
   text: string;
 }
@@ -1874,6 +1875,146 @@ export const paragraphs: Paragraph[] = [
     category: "environment",
     language: "English",
     text: "As India charts its development trajectory for the coming decades, the concept of a green new deal offers a framework for simultaneously addressing economic development, social equity, and environmental sustainability. This would involve large-scale public investment in renewable energy, sustainable infrastructure, green manufacturing, and environmental restoration, creating millions of new jobs while reducing pollution and carbon emissions. Digital technology would be central to this vision, from smart grids and electric vehicle charging networks to precision agriculture and circular economy platforms. Achieving this vision requires strong policy frameworks, international cooperation on climate finance, and broad social consensus around the importance of environmental sustainability for long-term prosperity.",
+  },
+  {
+    id: 421,
+    title: "Indian Society and Cultural Heritage",
+    category: "society",
+    language: "English",
+    text: "India is a country known for its deep historical roots, cultural diversity, artistic heritage, and social complexity. The cultural structure of India is shaped by centuries of traditions, philosophical ideas, religious practices, and social institutions. From ancient civilizations to the modern digital era, India has continuously evolved while maintaining its cultural identity. Indian society is built upon values such as respect for elders, family bonding, community cooperation, spirituality, and moral responsibility. Festivals, traditional clothing, regional languages, folk music, classical dance, cinema, literature, and food traditions together form the cultural framework of Indian society. This combination of tradition and modernity makes India a unique cultural civilization.",
+  },
+  {
+    id: 422,
+    title: "Media and Communication in India",
+    category: "society",
+    language: "English",
+    text: "The media landscape in India has transformed dramatically over the past three decades. From state-controlled broadcasting to private television networks, digital news platforms, and social media channels, the way Indians consume information has changed fundamentally. Regional language media has grown rapidly, reflecting the linguistic diversity of the country. Print journalism, though facing competition from digital platforms, continues to reach millions of readers across both urban and rural areas. The rise of citizen journalism and video blogging has democratized content creation, enabling voices from every corner of India to reach a national and global audience.",
+  },
+  {
+    id: 423,
+    title: "Rural India and Traditional Values",
+    category: "society",
+    language: "English",
+    text: "Rural India remains the backbone of the country's social and cultural identity. More than half of India's population lives in villages, where agriculture, animal husbandry, and cottage industries form the primary means of livelihood. Village communities maintain close-knit social structures based on shared customs, seasonal festivals, and communal cooperation. Traditional crafts such as pottery, weaving, embroidery, and woodwork continue to be practiced across different states. Government programs focusing on rural infrastructure, digital connectivity, and financial inclusion are slowly bridging the urban-rural divide. Education and healthcare access in villages has improved significantly through various national missions.",
+  },
+  {
+    id: 424,
+    title: "Youth Culture and Changing Lifestyles",
+    category: "society",
+    language: "English",
+    text: "India's young population is reshaping the country's cultural landscape at an extraordinary pace. With more than half the population below the age of thirty, youth culture has become a powerful social force influencing fashion, music, food preferences, relationship patterns, and political engagement. The proliferation of smartphones and affordable internet has connected young Indians to global trends while also creating new platforms for expressing local identities and languages. Career aspirations have broadened beyond traditional professions like medicine and engineering to include entrepreneurship, creative arts, sports, and digital careers. This generation is comfortable navigating between traditional family values and modern individual aspirations.",
+  },
+  {
+    id: 425,
+    title: "Women in Indian Society",
+    category: "society",
+    language: "English",
+    text: "The status and role of women in Indian society has undergone significant transformation in recent decades, though challenges persist across different regions and communities. Women have made remarkable strides in education, professional achievement, entrepreneurship, and political leadership. Female literacy rates have risen steadily, and women now occupy positions of leadership in business, science, sports, judiciary, and government. However, issues of gender inequality, domestic violence, unequal wages, and limited access to opportunities continue to affect millions of women, particularly in rural and conservative social environments. Social movements and legal reforms are creating pathways for greater gender equity.",
+  },
+  {
+    id: 426,
+    title: "Education and Social Mobility",
+    category: "society",
+    language: "English",
+    text: "Education has long been regarded as the most powerful instrument of social transformation in India. The Right to Education Act guarantees free and compulsory education for children between six and fourteen years of age, reflecting the government's commitment to universal literacy. Higher education institutions across India produce millions of graduates annually in science, technology, humanities, law, and medicine. However, quality disparities between urban and rural schools, and between government and private institutions, continue to perpetuate social inequalities. Scholarships, reservation policies, and digital learning platforms are working to democratize access to quality education for students from all socioeconomic backgrounds.",
+  },
+  {
+    id: 427,
+    title: "Urbanization and City Life",
+    category: "society",
+    language: "English",
+    text: "India is urbanizing at a rapid pace, with millions of people migrating from villages to cities every year in search of employment, education, and better living standards. Metropolitan cities like Mumbai, Delhi, Bengaluru, Chennai, and Hyderabad have grown into global economic hubs attracting talent and investment from around the world. Urban life brings opportunities but also challenges including traffic congestion, housing scarcity, water shortages, and social fragmentation. Smart city initiatives are attempting to use technology to improve urban infrastructure and public services. The coexistence of extreme wealth and deep poverty within the same urban spaces creates complex social dynamics that urban planners and policymakers continue to grapple with.",
+  },
+  {
+    id: 428,
+    title: "Religion and Spirituality in India",
+    category: "society",
+    language: "English",
+    text: "India is the birthplace of some of the world's oldest religions including Hinduism, Buddhism, Jainism, and Sikhism, and has been home for centuries to major world faiths including Islam, Christianity, and Zoroastrianism. Religious diversity is embedded in India's constitutional identity as a secular state where citizens are free to practice any faith. Temples, mosques, churches, gurudwaras, and monasteries coexist across Indian cities and villages, serving as centers of spiritual practice, community gathering, and cultural preservation. Religious festivals including Diwali, Eid, Christmas, Holi, Navratri, and Baisakhi are celebrated with great enthusiasm, often transcending religious boundaries and becoming occasions for national cultural unity.",
+  },
+  {
+    id: 429,
+    title: "Indian Cinema and Popular Culture",
+    category: "society",
+    language: "English",
+    text: "Indian cinema, commonly known as Bollywood for its Hindi-language productions, is one of the largest film industries in the world by number of films produced and tickets sold. Regional film industries in Tamil, Telugu, Malayalam, Kannada, Bengali, and Marathi add rich diversity to the cinematic landscape. Indian films reflect the country's social realities, aspirations, conflicts, and celebrations, serving as a mirror to society while also shaping popular opinion and culture. Music, dance, fashion, and dialogue from films permeate everyday Indian life. The global success of Indian films and web series on international streaming platforms has made Indian storytelling a significant force in world entertainment.",
+  },
+  {
+    id: 430,
+    title: "Technology and Digital Transformation",
+    category: "society",
+    language: "English",
+    text: "India's digital revolution is transforming every aspect of society from commerce and banking to education, healthcare, and governance. With over one billion mobile phone users and rapidly expanding internet penetration, India has become one of the world's largest digital marketplaces. The Unified Payments Interface has revolutionized financial transactions, enabling instant digital payments even in remote areas. E-commerce platforms have brought global markets to the doorstep of consumers in small towns and villages. Digital public infrastructure including Aadhaar, DigiLocker, and Government e-Marketplace are modernizing public service delivery. The technology startup ecosystem has established India as a global center for software innovation and digital entrepreneurship.",
+  },
+  {
+    id: 431,
+    title: "Healthcare and Public Health",
+    category: "society",
+    language: "English",
+    text: "India's healthcare system serves the largest democracy in the world, providing medical services to over one billion people across diverse geographic and socioeconomic conditions. Government hospitals, primary health centers, and Ayushman Bharat health insurance scheme are working to provide affordable healthcare to low-income populations. Advances in telemedicine and digital health platforms are connecting patients in remote areas with specialist doctors in cities. India's pharmaceutical industry is a global leader in generic medicine production, making essential drugs affordable worldwide. However, challenges remain in improving doctor-to-patient ratios, upgrading rural health infrastructure, and addressing public health issues including malnutrition, tuberculosis, and rising rates of non-communicable diseases.",
+  },
+  {
+    id: 432,
+    title: "Agriculture and Food Security",
+    category: "society",
+    language: "English",
+    text: "Agriculture remains the foundation of India's rural economy, employing nearly half the workforce and providing food security for 1.4 billion people. India is among the world's largest producers of rice, wheat, pulses, fruits, vegetables, milk, and spices. The green revolution of the 1960s transformed India from a food-deficit nation to a food-surplus country through improved crop varieties and irrigation expansion. Modern challenges facing Indian agriculture include climate change-induced weather extremes, soil degradation, water scarcity, and price volatility. Technology-driven solutions including precision agriculture, drone monitoring, soil sensors, and digital marketplaces are helping farmers improve productivity and access better prices for their produce.",
+  },
+  {
+    id: 433,
+    title: "India's Constitutional Democracy",
+    category: "society",
+    language: "English",
+    text: "India's Constitution, adopted in 1950, established the world's largest democracy with a federal structure, independent judiciary, and fundamental rights for all citizens. The Constitution guarantees freedom of speech and expression, right to equality, right against exploitation, and freedom of religion among other fundamental rights. Universal adult franchise enables every citizen above eighteen years to participate in the democratic process through free and fair elections. The Election Commission of India oversees electoral processes with independence and rigor. Multiple political parties representing diverse ideological positions, regional interests, and social constituencies compete for power at national, state, and local levels, reflecting the vibrancy of Indian democratic culture.",
+  },
+  {
+    id: 434,
+    title: "Environmental Challenges and Conservation",
+    category: "society",
+    language: "English",
+    text: "India faces significant environmental challenges including air pollution in major cities, declining groundwater levels, deforestation, plastic waste, and biodiversity loss. Rapid industrialization, urbanization, and agricultural expansion have placed enormous pressure on natural ecosystems. The Ganges and other major rivers face pollution from industrial effluents, agricultural runoff, and untreated sewage. Government initiatives including the National Clean Air Programme, Namami Gange project, and Swachh Bharat Mission are addressing these challenges at scale. Community-based conservation movements, environmental activism, and judicial interventions have also played important roles in protecting forests, wildlife habitats, and water bodies. Renewable energy expansion is reducing dependence on coal and improving air quality.",
+  },
+  {
+    id: 435,
+    title: "Sports and National Identity",
+    category: "society",
+    language: "English",
+    text: "Sports play an increasingly important role in shaping national identity and social cohesion in India. Cricket remains the most popular sport with massive following across all regions, age groups, and social classes. The Indian Premier League has transformed cricket into a global entertainment spectacle combining elite sport with commercial entertainment. Field hockey, badminton, wrestling, boxing, and athletics have produced world champions who inspire millions of young athletes. India's performance in international competitions including the Olympics, Commonwealth Games, and Asian Games has improved markedly, reflecting better sports infrastructure, coaching, and athlete support systems. The Khelo India initiative aims to identify and develop sporting talent from grassroots levels across the country.",
+  },
+  {
+    id: 436,
+    title: "Literature and Arts in India",
+    category: "society",
+    language: "English",
+    text: "Indian literature spans thousands of years from the ancient Sanskrit epics of Ramayana and Mahabharata to contemporary novels written in dozens of regional languages and English. Writers like Rabindranath Tagore, R.K. Narayan, Premchand, Ismat Chughtai, and Arundhati Roy have captured the complexities of Indian life with profound literary artistry. Classical art forms including Bharatanatyam, Kathak, Manipuri, and Odissi dance alongside visual art traditions of miniature painting, sculpture, and folk art represent India's extraordinary artistic heritage. Contemporary Indian artists, musicians, and designers are gaining recognition in global cultural markets while continuing to draw inspiration from rich traditional sources. Literary festivals and cultural events celebrate this diverse artistic heritage.",
+  },
+  {
+    id: 437,
+    title: "Social Justice and Caste",
+    category: "society",
+    language: "English",
+    text: "The caste system has been one of the most defining and contentious features of Indian social organization for millennia. Constitutional provisions including reservations in education, employment, and political representation have sought to address historical discrimination against Scheduled Castes, Scheduled Tribes, and Other Backward Classes. Social reform movements beginning with Jyotirao Phule and B.R. Ambedkar challenged caste hierarchy and fought for the dignity and rights of marginalized communities. While legal protections have improved access to opportunities for many, caste-based discrimination, violence, and social exclusion continue to affect millions. Education, economic development, and cultural change are gradually transforming caste relationships, particularly in urban environments.",
+  },
+  {
+    id: 438,
+    title: "Migration and Diaspora",
+    category: "society",
+    language: "English",
+    text: "India has one of the world's largest diasporas with millions of people of Indian origin living and working in countries across every continent. The Indian diaspora plays significant roles in global economies, particularly in the technology, healthcare, finance, and business sectors. Countries like the United States, United Kingdom, Canada, Australia, and Gulf nations host large and influential Indian communities. Remittances sent by overseas Indians constitute a significant contribution to India's foreign exchange earnings. Cultural influence flows in both directions as diaspora communities maintain connections to Indian traditions while also enriching the cultures of their adopted countries. Internal migration within India, from rural areas to cities and from less developed to more developed states, is also reshaping social and economic geography.",
+  },
+  {
+    id: 439,
+    title: "Infrastructure Development",
+    category: "society",
+    language: "English",
+    text: "India's infrastructure development has accelerated significantly over the past two decades, transforming connectivity, energy access, and urban amenities. The national highway network has expanded to connect cities, towns, and villages with high-quality roads. Railway modernization including high-speed corridors, electrification, and digital ticketing systems is improving intercity transport. Airports across the country have been upgraded to handle growing air travel demand. Rural electrification programs have brought electricity to virtually every village. Digital infrastructure including broadband networks, data centers, and government digital platforms underpins the country's economic and social development. However, maintaining and upgrading aging urban infrastructure in older cities remains a persistent challenge.",
+  },
+  {
+    id: 440,
+    title: "India in the Global Order",
+    category: "society",
+    language: "English",
+    text: "India's growing economic size, demographic weight, technological capabilities, and diplomatic influence have elevated its position in the international order. As one of the world's five largest economies and a nuclear power, India engages actively with major powers including the United States, China, Russia, and the European Union while also leading forums like BRICS and the Shanghai Cooperation Organization. India's G20 presidency provided a global platform to advance development priorities of the Global South. Strategic autonomy and multi-alignment have been defining features of India's foreign policy, allowing engagement with multiple partners based on national interest. Soft power through culture, cuisine, yoga, and the Bollywood diaspora extends India's global influence beyond economic and military dimensions.",
   },
 ];
 export const getByCategory = (category: string) =>
