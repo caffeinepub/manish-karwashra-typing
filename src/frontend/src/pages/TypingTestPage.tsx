@@ -450,12 +450,17 @@ export default function TypingTestPage() {
       {/* MAIN TWO-PANEL AREA */}
       <div
         className="flex border-b"
-        style={{ borderColor: "#d0d0d0", minHeight: "280px" }}
+        style={{ borderColor: "#d0d0d0", height: "280px" }}
       >
         {/* LEFT PANEL */}
         <div
-          className="flex-1 p-5 border-r overflow-auto"
-          style={{ borderColor: "#d0d0d0", background: "#ffffff" }}
+          className="flex-1 p-5 border-r"
+          style={{
+            borderColor: "#d0d0d0",
+            background: "#ffffff",
+            height: "280px",
+            overflowY: "auto",
+          }}
         >
           {phase === "typing" ? (
             <div
@@ -778,13 +783,15 @@ export default function TypingTestPage() {
       <div className="flex-1 p-3" style={{ background: "#ffffff" }}>
         <textarea
           ref={textareaRef}
-          className="w-full h-40 rounded px-3 py-2 resize-none focus:outline-none"
+          className="w-full rounded px-3 py-2 resize-none focus:outline-none"
           style={{
             fontFamily: "'Courier New', Courier, monospace",
             fontSize: "15px",
             background: "#fafafa",
             border: "1px solid #e0e0e0",
             color: "#333",
+            height: "248px",
+            overflowY: "auto",
           }}
           placeholder="Start typing here — timer starts automatically on first keystroke..."
           value={typed}
