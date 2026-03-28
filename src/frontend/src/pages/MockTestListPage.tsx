@@ -127,9 +127,16 @@ export default function MockTestListPage() {
   const [searchNums, setSearchNums] = useState<Record<string, string>>({});
   const [hartronSearch, setHartronSearch] = useState("");
 
+  const attemptedMocks: string[] = JSON.parse(
+    localStorage.getItem("karwashra_attempted_mocks") || "[]",
+  );
+
   const handleMockClick = (examSlug: string, mockNum: number) => {
     navigate({ to: `/mock-test/${examSlug}/${mockNum}` });
   };
+
+  const isAttempted = (examSlug: string, mockNum: number) =>
+    attemptedMocks.includes(`${examSlug}_mock_${mockNum}`);
 
   const getFilteredMocks = (examSlug: string): number[] => {
     const search = searchNums[examSlug]?.trim();
@@ -368,20 +375,26 @@ export default function MockTestListPage() {
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {mocks.map((n) => (
-                    <Button
-                      key={n}
-                      size="sm"
-                      style={{
-                        backgroundColor: btnBg,
-                        color: "white",
-                        minWidth: "60px",
-                      }}
-                      className="h-7 px-2.5 text-xs font-medium"
-                      onClick={() => handleMockClick(slug, n)}
-                      data-ocid={`mock.item.${n}`}
-                    >
-                      Mock {n}
-                    </Button>
+                    <div key={n} className="relative inline-block">
+                      <Button
+                        size="sm"
+                        style={{
+                          backgroundColor: btnBg,
+                          color: "white",
+                          minWidth: "60px",
+                        }}
+                        className="h-7 px-2.5 text-xs font-medium"
+                        onClick={() => handleMockClick(slug, n)}
+                        data-ocid={`mock.item.${n}`}
+                      >
+                        Mock {n}
+                      </Button>
+                      {isAttempted(slug, n) && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white rounded-full text-[9px] w-4 h-4 flex items-center justify-center font-bold leading-none">
+                          ✓
+                        </span>
+                      )}
+                    </div>
                   ))}
                   {mocks.length === 0 && (
                     <p className="text-sm text-gray-400 italic">

@@ -33,6 +33,7 @@ import {
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import BoldText, { stripBold } from "../components/BoldText";
+import Certificate from "../components/Certificate";
 import CharHighlight from "../components/CharHighlight";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
@@ -384,6 +385,7 @@ export default function MockTest() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [examStarted, setExamStarted] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [showCert, setShowCert] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const passageDivRef = useRef<HTMLDivElement>(null);
@@ -509,6 +511,18 @@ export default function MockTest() {
     if (timerRef.current) clearInterval(timerRef.current);
     setFinished(true);
     setPhase("result");
+    // Mark this mock as attempted
+    if (mockNumber > 0 && examSlug) {
+      const key = "karwashra_attempted_mocks";
+      const existing = JSON.parse(
+        localStorage.getItem(key) || "[]",
+      ) as string[];
+      const mockKey = `${examSlug}_mock_${mockNumber}`;
+      if (!existing.includes(mockKey)) {
+        existing.push(mockKey);
+        localStorage.setItem(key, JSON.stringify(existing));
+      }
+    }
   };
 
   const handleSubmitExam = () => handleStopExam();
@@ -1310,7 +1324,37 @@ export default function MockTest() {
               </div>
             )}
 
-            <div className="flex gap-3">
+            {/* Certificate Section */}
+            {(() => {
+              const passed = wpm >= 30 && accuracy >= 80;
+              return passed ? (
+                <div className="mb-4 text-center">
+                  <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-lg px-4 py-2 mb-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <span className="text-green-700 font-semibold">
+                      Congratulations! You Qualified!
+                    </span>
+                  </div>
+                  <div>
+                    <Button
+                      onClick={() => setShowCert(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                      data-ocid="mock.open_modal_button"
+                    >
+                      🏆 Download Certificate
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-4 text-center">
+                  <p className="text-sm text-gray-400">
+                    Minimum 30 WPM &amp; 80% accuracy required for certificate
+                  </p>
+                </div>
+              );
+            })()}
+
+            <div className="flex gap-3 flex-wrap">
               <Button
                 onClick={handleSaveResult}
                 className="bg-[#DAA520] hover:bg-amber-600 text-white flex-1"
@@ -1330,8 +1374,9 @@ export default function MockTest() {
                 variant="outline"
                 className="flex-1 border-orange-500 text-orange-700 hover:bg-orange-50"
                 data-ocid="mock.secondary_button"
+                title="Already attempted — results may not reflect first attempt"
               >
-                Try Again (Same Text)
+                Practice Again
               </Button>
               <Button
                 onClick={() => {
@@ -1354,6 +1399,16 @@ export default function MockTest() {
         </div>
       </main>
       <Footer />
+      {showCert && (
+        <Certificate
+          type="typing"
+          candidateName={candidateName || "Candidate"}
+          examName={exam}
+          wpm={wpm}
+          accuracy={accuracy}
+          onClose={() => setShowCert(false)}
+        />
+      )}
     </div>
   );
 }

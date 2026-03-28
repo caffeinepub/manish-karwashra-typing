@@ -91,7 +91,7 @@ export default function TypingTestPage() {
   const [paraIndex, setParaIndex] = useState(0);
   const [duration, setDuration] = useState(DURATION_OPTIONS[3]);
   const [language, setLanguage] = useState("English");
-  const [wordCountOption, setWordCountOption] = useState(WORD_COUNT_OPTIONS[4]);
+  const [wordCountOption, setWordCountOption] = useState(WORD_COUNT_OPTIONS[5]);
 
   const [wordSpans, setWordSpans] = useState<WordSpan[]>([]);
   const [wordStatuses, setWordStatuses] = useState<WordStatus[]>([]);
