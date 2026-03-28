@@ -41,6 +41,7 @@ const WORD_COUNT_OPTIONS = [
   { label: "100 Words", count: 100 },
   { label: "200 Words", count: 200 },
   { label: "500 Words", count: 500 },
+  { label: "1000 Words", count: 1000 },
   { label: "All Words", count: 0 },
 ];
 
