@@ -39,6 +39,24 @@ function saveUsers(users: User[]) {
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
 }
 
+const DEMO_USER: User = {
+  id: "DEMO01",
+  name: "Demo User",
+  username: "demo",
+  email: "demo@test.com",
+  passwordHash: btoa("demo123"),
+  securityQuestion: "Aapka pehla pet ka naam?",
+  securityAnswer: "tommy",
+};
+
+function ensureDemoUser() {
+  const users = getUsers();
+  const hasDemo = users.some((u) => u.id === "DEMO01");
+  if (!hasDemo) {
+    saveUsers([DEMO_USER, ...users]);
+  }
+}
+
 interface AuthContextType {
   currentUser: User | null;
   login: (
@@ -68,6 +86,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    ensureDemoUser();
     try {
       return JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || "null");
     } catch {
@@ -90,7 +109,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         (u.email && u.email.toLowerCase() === emailOrUsername.toLowerCase()) ||
         u.username.toLowerCase() === emailOrUsername.toLowerCase(),
     );
-    if (!user) return { success: false, error: "User nahi mila" };
+    if (!user)
+      return {
+        success: false,
+        error:
+          "User nahi mila. Pehle 'Register' tab mein account banayein, ya 'demo' / 'demo123' se try karein",
+      };
     if (user.passwordHash !== hashPassword(password)) {
       return { success: false, error: "Password galat hai" };
     }
@@ -169,7 +193,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         (u.email && u.email.toLowerCase() === emailOrUsername.toLowerCase()) ||
         u.username.toLowerCase() === emailOrUsername.toLowerCase(),
     );
-    if (!user) return { success: false, error: "User nahi mila" };
+    if (!user)
+      return {
+        success: false,
+        error:
+          "User nahi mila. Apna sahi email ya username daalein jo register ke time use kiya tha",
+      };
     if (user.securityAnswer !== securityAnswer.toLowerCase().trim()) {
       return { success: false, error: "Security answer galat hai" };
     }

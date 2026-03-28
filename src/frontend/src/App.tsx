@@ -1,6 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { createRootRoute, createRoute, redirect } from "@tanstack/react-router";
+import { createRootRoute, createRoute } from "@tanstack/react-router";
 import AppLayout from "./components/AppLayout";
 import { AuthProvider } from "./context/AuthContext";
 import AdminLoginPage from "./pages/AdminLoginPage";
@@ -25,14 +25,6 @@ import ResultsHistory from "./pages/ResultsHistory";
 import SettingsPage from "./pages/SettingsPage";
 import TypingPractice from "./pages/TypingPractice";
 import TypingTestPage from "./pages/TypingTestPage";
-
-function isLoggedIn(): boolean {
-  try {
-    return !!JSON.parse(localStorage.getItem("exam_current_user") || "null");
-  } catch {
-    return false;
-  }
-}
 
 function withLayout(Component: React.ComponentType) {
   return function WrappedComponent() {
@@ -67,198 +59,132 @@ const adminRoute = createRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(Home),
 });
 
 const typingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/typing/$examCategory",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(TypingPractice),
 });
 
 const mcqRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/mcq/$examCategory",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(MCQTest),
 });
 
 const liveTestRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/live-test",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(LiveTest),
 });
 
 const liveTestExamRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/live-test/$examSlug",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(LiveTest),
 });
 
 const mockTestRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/mock-test",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(MockTest),
 });
 
 const mockTestExamRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/mock-test/$examSlug",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(MockTest),
 });
 
 const mockListRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/mock-list",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(MockTestListPage),
 });
 
 const mockTestNumberedRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/mock-test/$examSlug/$mockNumber",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(MockTest),
 });
 
 const hartronMockRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/hartron-mock/$mockNumber",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(HartronMockPage),
 });
 
 const learningRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/learning",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(LearningTyping),
 });
 
 const resultsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/results",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(ResultsHistory),
 });
 
 const typingTestRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/typing-test",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(TypingTestPage),
 });
 
 const practiceRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/practice",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(PracticePage),
 });
 
 const examModeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/exam-mode",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(ExamModePage),
 });
 
 const gamesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/games",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(GamesPage),
 });
 
 const dictationRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dictation",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(DictationPage),
 });
 
 const progressRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/progress",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(ProgressPage),
 });
 
 const leaderboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/leaderboard",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(LeaderboardPage),
 });
 
 const dailyChallengeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/daily-challenge",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(DailyChallengePage),
 });
 
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/settings",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(SettingsPage),
 });
 
 const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/profile",
-  beforeLoad: () => {
-    if (!isLoggedIn()) throw redirect({ to: "/login" });
-  },
   component: withLayout(ProfilePage),
 });
 

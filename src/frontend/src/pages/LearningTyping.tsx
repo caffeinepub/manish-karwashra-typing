@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { stripBold } from "../components/BoldText";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { paragraphs as allParagraphs } from "../data/paragraphs";
 
+// ─── Keyboard rows ────────────────────────────────────────────────────────────
 const KEYBOARD_ROWS = [
   ["~", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "⌫"],
   ["Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\\\"],
@@ -61,140 +63,304 @@ const FINGER_MAP: Record<string, string> = {
   G: "bg-green-300",
 };
 
-const HOME_KEYS = ["A", "S", "D", "F", "J", "K", "L", ";"];
+const FINGER_GUIDE: Record<string, string> = {
+  A: "Left Pinky",
+  S: "Left Ring",
+  D: "Left Middle",
+  F: "Left Index",
+  G: "Left Index",
+  H: "Right Index",
+  J: "Right Index",
+  K: "Right Middle",
+  L: "Right Ring",
+  ";": "Right Pinky",
+  Q: "Left Pinky",
+  W: "Left Ring",
+  E: "Left Middle",
+  R: "Left Index",
+  T: "Left Index",
+  Y: "Right Index",
+  U: "Right Index",
+  I: "Right Middle",
+  O: "Right Ring",
+  P: "Right Pinky",
+  Z: "Left Pinky",
+  X: "Left Ring",
+  C: "Left Middle",
+  V: "Left Index",
+  B: "Left Index",
+  N: "Right Index",
+  M: "Right Index",
+  ",": "Right Middle",
+  ".": "Right Ring",
+  "/": "Right Pinky",
+  "1": "Left Pinky",
+  "2": "Left Ring",
+  "3": "Left Middle",
+  "4": "Left Index",
+  "5": "Left Index",
+  "6": "Right Index",
+  "7": "Right Index",
+  "8": "Right Middle",
+  "9": "Right Ring",
+  "0": "Right Pinky",
+};
+
+// ─── Lessons ──────────────────────────────────────────────────────────────────
+const LESSONS = [
+  {
+    id: "intro",
+    title: "1. Introduction",
+    icon: "🎯",
+    desc: "Typing ke basics sikhein",
+    keys: [] as string[],
+  },
+  {
+    id: "homerow",
+    title: "2. Home Row Keys",
+    icon: "🏠",
+    desc: "ASDF JKL; — sabse zaroori row",
+    keys: ["A", "S", "D", "F", "J", "K", "L", ";"],
+  },
+  {
+    id: "toprow",
+    title: "3. Top Row Keys",
+    icon: "⬆️",
+    desc: "QWERTY row — upar wali row",
+    keys: ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+  },
+  {
+    id: "bottomrow",
+    title: "4. Bottom Row Keys",
+    icon: "⬇️",
+    desc: "ZXCVBNM — neeche wali row",
+    keys: ["Z", "X", "C", "V", "B", "N", "M"],
+  },
+  {
+    id: "numbers",
+    title: "5. Number Keys",
+    icon: "🔢",
+    desc: "1234567890 — number row",
+    keys: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
+  },
+  {
+    id: "words",
+    title: "6. Word Practice",
+    icon: "📝",
+    desc: "Common English words practice",
+    keys: [],
+  },
+  {
+    id: "sentences",
+    title: "7. Sentence Practice",
+    icon: "📖",
+    desc: "Full sentence typing practice",
+    keys: [],
+  },
+  {
+    id: "paragraph",
+    title: "8. Paragraph Practice",
+    icon: "📄",
+    desc: "Real exam paragraph practice",
+    keys: [],
+  },
+];
+
+const LESSON_TEXTS: Record<string, string> = {
+  intro:
+    "the quick brown fox jumps over the lazy dog type all letters use correct fingers",
+  homerow:
+    "asdf jkl; asdf jkl; sad fad jad kal sal dal fall glad flag ask flask",
+  toprow:
+    "quit were type your quite power write error top quit type power tower",
+  bottomrow: "zinc vex numb mix vim cab ban van mob zoom vibe zone cave",
+  numbers: "1234 5678 90 12 345 6789 100 200 500 1000 2024 2025 1000000",
+  words:
+    "computer typing speed accuracy keyboard practice lesson government exam selection",
+  sentences:
+    "The quick brown fox jumps over the lazy dog. Practice makes perfect. Good typing needs all fingers. Speed comes with accuracy. Daily practice improves performance.",
+  paragraph: "",
+};
 
 const TIPS = [
   {
     icon: "🏠",
-    title: "Master Home Row First",
-    desc: "Place your fingers on ASDF (left) and JKL; (right). These are the home row keys — always return here.",
+    title: "Home Row",
+    desc: "ASDF (left) aur JKL; (right) — hamesha yahan vapas aayein.",
   },
   {
     icon: "👀",
-    title: "Don't Look at the Keyboard",
-    desc: "Train yourself to type without looking. Use the finger bumps on F and J as guides.",
+    title: "Screen Dekho",
+    desc: "Keyboard pe mat dekho. F aur J bumps se position pata karo.",
   },
   {
     icon: "⚡",
-    title: "Accuracy Before Speed",
-    desc: "Focus on hitting the correct keys first. Speed will come naturally with practice.",
+    title: "Accuracy Pehle",
+    desc: "Pehle sahi type karo, speed apne aap aayegi.",
   },
   {
     icon: "🕐",
-    title: "Practice Daily",
-    desc: "15-30 minutes of focused practice daily is better than 2 hours once a week.",
+    title: "Daily Practice",
+    desc: "15-30 minute daily practice bahut better hai week mein ek baar se.",
   },
   {
     icon: "🎯",
-    title: "Use All 10 Fingers",
-    desc: "Each finger is responsible for specific keys. Using all 10 fingers distributes the workload.",
+    title: "10 Ungliyaan",
+    desc: "Har finger ke liye specific keys hain — sab use karo.",
   },
   {
     icon: "📊",
-    title: "Track Your Progress",
-    desc: "Monitor your WPM and accuracy. Set targets: 30 WPM to 40 WPM to 50+ WPM progressively.",
+    title: "Progress Track",
+    desc: "WPM aur accuracy track karo. Target: 30 → 40 → 50+ WPM.",
   },
 ];
 
-const PRACTICE_WORDS = [
-  "the",
-  "and",
-  "for",
-  "are",
-  "but",
-  "not",
-  "you",
-  "all",
-  "any",
-  "can",
-  "her",
-  "was",
-  "one",
-  "our",
-  "out",
-  "day",
-  "get",
-  "has",
-  "him",
-  "his",
-  "how",
-  "man",
-  "new",
-  "now",
-  "old",
-  "see",
-  "two",
-  "way",
-  "who",
-  "boy",
-  "did",
-  "its",
-  "let",
-  "put",
-  "say",
-  "she",
-  "too",
-  "use",
-  "may",
-  "had",
-];
-
-function stripBoldMarkers(text: string): string {
-  return text.replace(/\*\*(.*?)\*\*/g, "$1");
+// ─── Keyboard visual component ────────────────────────────────────────────────
+function KeyboardVisual({
+  lessonKeys,
+  currentKey,
+}: { lessonKeys: string[]; currentKey: string }) {
+  const wideKeys = ["Tab", "Caps", "Shift", "Shift2", "Enter", "⌫", "Space"];
+  return (
+    <div className="bg-gray-100 rounded-xl p-3 border border-gray-200">
+      {KEYBOARD_ROWS.map((row, rIdx) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: keyboard row order never changes
+        <div key={rIdx} className="flex gap-1 justify-center mb-1">
+          {row.map((key) => {
+            const isLesson = lessonKeys.includes(key);
+            const isCurrent =
+              currentKey !== "" &&
+              key.toUpperCase() === currentKey.toUpperCase();
+            const baseColor = FINGER_MAP[key] || "bg-gray-200";
+            const isWide = wideKeys.includes(key);
+            return (
+              <div
+                key={key}
+                className={[
+                  "flex items-center justify-center rounded text-xs font-bold select-none transition-all",
+                  isWide ? "px-2 min-w-[40px]" : "w-8",
+                  "h-8",
+                  isCurrent
+                    ? "bg-orange-400 text-white scale-110 shadow-lg ring-2 ring-orange-600"
+                    : isLesson
+                      ? `${baseColor} ring-2 ring-yellow-400 brightness-110 animate-pulse`
+                      : `${baseColor} text-gray-700`,
+                ].join(" ")}
+              >
+                {key === "Space" ? "___" : key === "Shift2" ? "Shift" : key}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+      <div className="mt-2 flex flex-wrap gap-2 justify-center text-xs">
+        {[
+          ["bg-pink-300", "Left Pinky"],
+          ["bg-purple-300", "Left Ring"],
+          ["bg-blue-300", "Left Middle"],
+          ["bg-green-300", "Left Index"],
+          ["bg-yellow-300", "Right Index"],
+          ["bg-orange-300", "Right Middle"],
+          ["bg-red-300", "Right Ring"],
+          ["bg-rose-300", "Right Pinky"],
+        ].map(([c, l]) => (
+          <span key={l} className="flex items-center gap-1">
+            <span className={`inline-block w-3 h-3 rounded ${c}`} />
+            <span className="text-gray-500">{l}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
 
-// ── Pro Typing Section ────────────────────────────────────────────────────────
-type ProPhase = "setup" | "running" | "result";
-type WordStatus = "pending" | "correct" | "wrong";
+// ─── Lesson Practice ──────────────────────────────────────────────────────────
+type Phase = "idle" | "running" | "done";
 
-function ProTyping() {
-  const [language, setLanguage] = useState<"English" | "Hindi">("English");
-  const [phase, setPhase] = useState<ProPhase>("setup");
-  const [passageIndex, setPassageIndex] = useState(0);
+function LessonPractice({
+  lessonId,
+  lessonKeys,
+  onComplete,
+}: {
+  lessonId: string;
+  lessonKeys: string[];
+  onComplete: () => void;
+}) {
+  const practiceText =
+    lessonId === "paragraph"
+      ? (() => {
+          const p = allParagraphs.find((para) => para.language === "English");
+          return p
+            ? stripBold(p.text).split(" ").slice(0, 80).join(" ")
+            : LESSON_TEXTS.words;
+        })()
+      : LESSON_TEXTS[lessonId] || LESSON_TEXTS.words;
+
+  const words = practiceText.trim().split(/\s+/).filter(Boolean);
+
+  const [phase, setPhase] = useState<Phase>("idle");
   const [typed, setTyped] = useState("");
-  const [wordStatuses, setWordStatuses] = useState<WordStatus[]>([]);
   const [currentWordIdx, setCurrentWordIdx] = useState(0);
   const [currentWordTyped, setCurrentWordTyped] = useState("");
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [endTime, setEndTime] = useState<number | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [wordStatuses, setWordStatuses] = useState<
+    ("pending" | "correct" | "wrong")[]
+  >(() => new Array(words.length).fill("pending"));
+  const [startTime, setStartTime] = useState(0);
+  const [elapsedSec, setElapsedSec] = useState(0);
+  const [currentKey, setCurrentKey] = useState("");
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const filteredParas = allParagraphs.filter((p) => p.language === language);
-  const currentPara =
-    filteredParas[passageIndex % Math.max(filteredParas.length, 1)];
-  const passageText = currentPara ? stripBoldMarkers(currentPara.text) : "";
-  const passageWords = passageText.trim().split(/\s+/).filter(Boolean);
-
-  const handleStart = () => {
-    const words = passageText.trim().split(/\s+/).filter(Boolean);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reset on lesson change
+  useEffect(() => {
+    setPhase("idle");
     setTyped("");
-    setWordStatuses(new Array(words.length).fill("pending") as WordStatus[]);
     setCurrentWordIdx(0);
     setCurrentWordTyped("");
-    setStartTime(null);
-    setEndTime(null);
-    setPhase("running");
-    setTimeout(() => textareaRef.current?.focus(), 50);
-  };
+    setWordStatuses(new Array(words.length).fill("pending"));
+    setElapsedSec(0);
+    setCurrentKey("");
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, [lessonId]);
+
+  useEffect(() => {
+    if (phase === "running") {
+      timerRef.current = setInterval(() => {
+        setElapsedSec(Math.floor((Date.now() - startTime) / 1000));
+      }, 500);
+    } else if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [phase, startTime]);
+
+  const correctWords = wordStatuses.filter((s) => s === "correct").length;
+  const totalTyped = wordStatuses.filter((s) => s !== "pending").length;
+  const wpm = elapsedSec > 0 ? Math.round((correctWords / elapsedSec) * 60) : 0;
+  const accuracy =
+    totalTyped > 0 ? Math.round((correctWords / totalTyped) * 100) : 0;
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (phase !== "running") return;
+    if (phase === "done") return;
     const val = e.target.value;
     const prevVal = typed;
-    if (!startTime) setStartTime(Date.now());
-
+    if (phase === "idle") {
+      setPhase("running");
+      setStartTime(Date.now());
+    }
+    setTyped(val);
+    setCurrentKey(val.slice(-1).toUpperCase());
     const prevEndsWithSpace = prevVal.endsWith(" ");
     const curEndsWithSpace = val.endsWith(" ");
-
-    setTyped(val);
-
     if (curEndsWithSpace && !prevEndsWithSpace) {
-      // Space pressed — finalize current word
       const parts = val.trimEnd().split(" ");
-      const finishedWordTyped = parts[parts.length - 1] || "";
-      const targetWord = passageWords[currentWordIdx] || "";
-      const status: WordStatus =
-        finishedWordTyped === targetWord ? "correct" : "wrong";
+      const finishedWord = parts[parts.length - 1] || "";
+      const targetWord = words[currentWordIdx] || "";
+      const status: "correct" | "wrong" =
+        finishedWord === targetWord ? "correct" : "wrong";
       setWordStatuses((prev) => {
         const next = [...prev];
         next[currentWordIdx] = status;
@@ -203,10 +369,11 @@ function ProTyping() {
       const nextIdx = currentWordIdx + 1;
       setCurrentWordIdx(nextIdx);
       setCurrentWordTyped("");
-      // Auto-finish if last word done
-      if (nextIdx >= passageWords.length) {
-        setEndTime(Date.now());
-        setPhase("result");
+      if (nextIdx >= words.length) {
+        setTimeout(() => {
+          setPhase("done");
+          onComplete();
+        }, 300);
       }
     } else {
       const parts = val.split(" ");
@@ -214,458 +381,434 @@ function ProTyping() {
     }
   };
 
-  const handleSubmit = () => {
-    setEndTime(Date.now());
-    setPhase("result");
-  };
-
-  const handleReset = () => {
+  const resetPractice = () => {
+    setPhase("idle");
     setTyped("");
-    setWordStatuses([]);
     setCurrentWordIdx(0);
     setCurrentWordTyped("");
-    setStartTime(null);
-    setEndTime(null);
-    setPhase("setup");
+    setWordStatuses(new Array(words.length).fill("pending"));
+    setElapsedSec(0);
+    setCurrentKey("");
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimeout(() => inputRef.current?.focus(), 50);
   };
-
-  const handleNewPassage = () => {
-    setPassageIndex((i) => i + 1);
-    setTyped("");
-    setWordStatuses([]);
-    setCurrentWordIdx(0);
-    setCurrentWordTyped("");
-    setStartTime(null);
-    setEndTime(null);
-    setPhase("setup");
-  };
-
-  const calcStats = () => {
-    const elapsed =
-      startTime && endTime ? (endTime - startTime) / 1000 / 60 : 1;
-    const correctWords = wordStatuses.filter((s) => s === "correct").length;
-    const errors = wordStatuses.filter((s) => s === "wrong").length;
-    const total = correctWords + errors;
-    const wpm = Math.round(total / Math.max(elapsed, 0.01));
-    const accuracy = total > 0 ? Math.round((correctWords / total) * 100) : 100;
-    return { wpm, accuracy, correctWords, errors };
-  };
-
-  useEffect(() => {
-    if (phase === "setup") {
-      setTyped("");
-      setWordStatuses([]);
-      setCurrentWordIdx(0);
-      setCurrentWordTyped("");
-      setStartTime(null);
-      setEndTime(null);
-    }
-  }, [phase]);
 
   return (
-    <section
-      className="bg-white rounded-xl shadow p-6 mb-8"
-      data-ocid="pro.panel"
-    >
-      <div className="flex items-center gap-3 mb-1">
-        <span className="bg-gradient-to-r from-[#DAA520] to-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-          PRO
-        </span>
-        <h2 className="text-xl font-bold text-gray-900">Pro Typing</h2>
-      </div>
-      <p className="text-sm text-gray-500 mb-5">
-        100+ real exam paragraphs — SSC, Railway, Banking, Delhi Police, State
-        Exams
-      </p>
+    <div className="space-y-4">
+      <KeyboardVisual lessonKeys={lessonKeys} currentKey={currentKey} />
 
-      {/* Setup Phase */}
-      {phase === "setup" && (
-        <div className="flex flex-col items-center gap-6 py-6">
-          <div>
-            <p className="text-sm font-semibold text-gray-700 mb-3 text-center">
-              भाषा / Language चुनें:
-            </p>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setLanguage("English")}
-                className={`px-6 py-3 rounded-xl border-2 text-sm font-bold transition-colors ${
-                  language === "English"
-                    ? "bg-[#0d1b4b] text-white border-[#0d1b4b]"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-[#0d1b4b]"
-                }`}
-                data-ocid="pro.toggle"
-              >
-                English
-              </button>
-              <button
-                type="button"
-                onClick={() => setLanguage("Hindi")}
-                className={`px-6 py-3 rounded-xl border-2 text-sm font-bold transition-colors ${
-                  language === "Hindi"
-                    ? "bg-orange-600 text-white border-orange-600"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-orange-500"
-                }`}
-                data-ocid="pro.toggle"
-              >
-                हिंदी
-              </button>
-            </div>
-          </div>
-          <div className="text-center">
-            <p className="text-xs text-gray-400 mb-4">
-              {filteredParas.length} paragraphs available • Passage{" "}
-              {(passageIndex % Math.max(filteredParas.length, 1)) + 1} of{" "}
-              {filteredParas.length}
-            </p>
-            <button
-              type="button"
-              onClick={handleStart}
-              className="px-10 py-3 bg-green-600 text-white rounded-xl font-bold text-base hover:bg-green-700 transition-colors shadow-md"
-              data-ocid="pro.primary_button"
-            >
-              ▶ Start Typing
-            </button>
-          </div>
+      {currentKey && FINGER_GUIDE[currentKey] && (
+        <div className="text-xs text-center bg-blue-50 border border-blue-200 rounded px-3 py-1.5 text-blue-700 font-medium">
+          👉 Use your <strong>{FINGER_GUIDE[currentKey]}</strong> finger for key{" "}
+          <strong>{currentKey}</strong>
         </div>
       )}
 
-      {/* Running Phase */}
-      {phase === "running" && (
-        <>
-          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-            <span className="text-xs font-semibold text-[#DAA520]">
-              {currentPara?.title}
+      <div className="flex gap-3">
+        <div className="flex-1 bg-blue-50 rounded-lg p-2 text-center">
+          <div className="text-xl font-bold text-blue-700">{wpm}</div>
+          <div className="text-xs text-blue-500">WPM</div>
+        </div>
+        <div className="flex-1 bg-green-50 rounded-lg p-2 text-center">
+          <div className="text-xl font-bold text-green-700">{accuracy}%</div>
+          <div className="text-xs text-green-500">Accuracy</div>
+        </div>
+        <div className="flex-1 bg-purple-50 rounded-lg p-2 text-center">
+          <div className="text-xl font-bold text-purple-700">{elapsedSec}s</div>
+          <div className="text-xs text-purple-500">Time</div>
+        </div>
+        <div className="flex-1 bg-orange-50 rounded-lg p-2 text-center">
+          <div className="text-xl font-bold text-orange-700">
+            {currentWordIdx}/{words.length}
+          </div>
+          <div className="text-xs text-orange-500">Words</div>
+        </div>
+      </div>
+
+      {/* Practice text */}
+      <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 text-base leading-8 font-mono select-none min-h-[80px]">
+        {words.map((word, wIdx) => {
+          const status = wordStatuses[wIdx];
+          const isCurrent = wIdx === currentWordIdx;
+          const wordKey = `w-${wIdx}-${word}`;
+          if (isCurrent) {
+            return (
+              <span key={wordKey}>
+                <span className="bg-blue-700 text-white rounded px-0.5">
+                  {word.split("").map((ch, cIdx) => {
+                    const charKey = `c-${wIdx}-${cIdx}`;
+                    if (cIdx < currentWordTyped.length) {
+                      const correct = ch === currentWordTyped[cIdx];
+                      return (
+                        <span
+                          key={charKey}
+                          className={correct ? "" : "text-red-300 line-through"}
+                        >
+                          {ch}
+                        </span>
+                      );
+                    }
+                    return <span key={charKey}>{ch}</span>;
+                  })}
+                </span>{" "}
+              </span>
+            );
+          }
+          if (status === "correct")
+            return (
+              <span key={wordKey}>
+                <span className="text-green-600 font-semibold">
+                  {word}
+                </span>{" "}
+              </span>
+            );
+          if (status === "wrong")
+            return (
+              <span key={wordKey}>
+                <span className="bg-red-500 text-white rounded px-0.5">
+                  {word}
+                </span>{" "}
+              </span>
+            );
+          return (
+            <span key={wordKey}>
+              <span className="text-gray-700">{word}</span>{" "}
             </span>
-            <span className="text-xs text-gray-400">
-              {language} •{" "}
-              {(passageIndex % Math.max(filteredParas.length, 1)) + 1}/
-              {filteredParas.length}
-            </span>
+          );
+        })}
+      </div>
+
+      {phase !== "done" ? (
+        <textarea
+          ref={inputRef}
+          value={typed}
+          onChange={handleInput}
+          placeholder={
+            phase === "idle"
+              ? "Yahan type karo — pehla keystroke se timer start hoga..."
+              : ""
+          }
+          className="w-full border-2 border-blue-300 rounded-xl p-3 font-mono text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          rows={3}
+        />
+      ) : (
+        <div className="bg-green-50 border-2 border-green-400 rounded-xl p-4 text-center">
+          <div className="text-2xl mb-1">🎉</div>
+          <div className="font-bold text-green-700 text-lg">
+            Shabash! Lesson Complete!
           </div>
-          <div className="bg-gray-50 rounded-xl border-2 border-[#DAA520] p-5 mb-4 font-mono text-sm leading-8 select-none text-black overflow-auto max-h-56">
-            {passageWords.map((word, wIdx) => {
-              const status = wordStatuses[wIdx] || "pending";
-              const isCurrent = wIdx === currentWordIdx;
-              if (isCurrent) {
-                return (
-                  <span key={word + String(wIdx)}>
-                    <span className="bg-yellow-300 text-gray-900 rounded px-0.5">
-                      {Array.from(word).map((ch, charPos) => {
-                        const charKey = `${wIdx}-${charPos}-${ch}`;
-                        if (charPos < currentWordTyped.length) {
-                          const correct = ch === currentWordTyped[charPos];
-                          return (
-                            <span
-                              key={charKey}
-                              style={{ color: correct ? "#1565c0" : "#c62828" }}
-                            >
-                              {ch}
-                            </span>
-                          );
-                        }
-                        return <span key={charKey}>{ch}</span>;
-                      })}
-                    </span>{" "}
-                  </span>
-                );
-              }
-              if (status === "correct") {
-                return (
-                  <span key={word + String(wIdx)}>
-                    <span className="text-green-700 font-semibold">
-                      {word}
-                    </span>{" "}
-                  </span>
-                );
-              }
-              if (status === "wrong") {
-                return (
-                  <span key={word + String(wIdx)}>
-                    <span className="bg-red-600 text-white rounded px-0.5 font-semibold">
-                      {word}
-                    </span>{" "}
-                  </span>
-                );
-              }
-              return (
-                <span key={word + String(wIdx)}>
-                  <span className="text-gray-500">{word}</span>{" "}
-                </span>
-              );
-            })}
+          <div className="text-sm text-gray-600 mt-1">
+            WPM: {wpm} | Accuracy: {accuracy}%
           </div>
-          <textarea
-            ref={textareaRef}
-            value={typed}
-            onChange={handleInput}
-            placeholder={
-              language === "Hindi" ? "यहाँ टाइप करें..." : "Start typing here..."
-            }
-            className="w-full h-28 p-4 border-2 border-[#DAA520] rounded-xl focus:outline-none font-mono text-sm resize-none bg-white text-black shadow-sm"
-            data-ocid="pro.editor"
-          />
-          <div className="flex gap-3 mt-3">
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="px-5 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors"
-              data-ocid="pro.submit_button"
-            >
-              Submit
-            </button>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-colors"
-              data-ocid="pro.cancel_button"
-            >
-              Cancel
-            </button>
-          </div>
-        </>
+          <button
+            type="button"
+            onClick={resetPractice}
+            className="mt-3 px-4 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Dobara Karo
+          </button>
+        </div>
       )}
 
-      {/* Result Phase */}
-      {phase === "result" &&
-        (() => {
-          const { wpm, accuracy, correctWords, errors } = calcStats();
-          return (
-            <div
-              className="bg-white rounded-xl border-2 border-[#DAA520] p-6"
-              data-ocid="pro.success_state"
-            >
-              <div className="text-center mb-5">
-                <div className="text-4xl mb-2">🎉</div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  Test Complete!
-                </h3>
-                <p className="text-gray-500 text-sm">{currentPara?.title}</p>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-                <div className="bg-blue-50 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-blue-600">{wpm}</div>
-                  <div className="text-xs text-gray-500">WPM</div>
-                </div>
-                <div className="bg-green-50 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    {accuracy}%
-                  </div>
-                  <div className="text-xs text-gray-500">Accuracy</div>
-                </div>
-                <div className="bg-emerald-50 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-emerald-600">
-                    {correctWords}
-                  </div>
-                  <div className="text-xs text-gray-500">Correct Words</div>
-                </div>
-                <div className="bg-red-50 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-red-600">
-                    {errors}
-                  </div>
-                  <div className="text-xs text-gray-500">Errors</div>
-                </div>
-              </div>
-              {wpm >= 30 && accuracy >= 80 && (
-                <div className="text-center mb-4 p-3 bg-green-50 border border-green-300 rounded-lg">
-                  <div className="text-green-700 font-semibold text-sm">
-                    🎓 Congratulations! You qualified this test.
-                  </div>
-                  <div className="text-green-600 text-xs mt-1">
-                    Criteria: 30+ WPM & 80%+ accuracy
-                  </div>
-                </div>
-              )}
-              <div className="flex justify-center gap-3 flex-wrap">
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="px-4 py-2 bg-[#DAA520] text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors"
-                  data-ocid="pro.primary_button"
-                >
-                  Try Again
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNewPassage}
-                  className="px-4 py-2 border-2 border-[#DAA520] text-gray-800 rounded-lg text-sm font-semibold hover:bg-amber-50 transition-colors"
-                  data-ocid="pro.secondary_button"
-                >
-                  New Passage
-                </button>
-              </div>
-            </div>
-          );
-        })()}
-    </section>
+      <button
+        type="button"
+        onClick={resetPractice}
+        className="w-full py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+        data-ocid="learning.secondary_button"
+      >
+        🔄 Reset
+      </button>
+    </div>
   );
 }
 
-// ── Main Page ────────────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function LearningTyping() {
-  return (
-    <div className="min-h-screen flex flex-col bg-[#f5f5f5]">
-      <Header />
-      <main className="flex-1 py-8 px-4">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-2xl font-bold text-[#0d1b4b] mb-2">
-            Learning Typing
-          </h1>
-          <p className="text-gray-500 mb-8">
-            Master touch typing with our structured guide for government exam
-            preparation
-          </p>
+  const [activeLesson, setActiveLesson] = useState("intro");
+  const [completedSet, setCompletedSet] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem("learning_completed");
+      return new Set(stored ? JSON.parse(stored) : []);
+    } catch {
+      return new Set();
+    }
+  });
+  const [showTips, setShowTips] = useState(false);
 
-          <section className="bg-white rounded-xl shadow p-6 mb-8">
-            <h2 className="text-lg font-bold text-gray-800 mb-2">
-              Keyboard Layout &amp; Finger Placement
-            </h2>
-            <p className="text-sm text-gray-500 mb-5">
-              Colors indicate which finger to use for each key
+  const lesson = LESSONS.find((l) => l.id === activeLesson) || LESSONS[0];
+  const lessonIdx = LESSONS.findIndex((l) => l.id === activeLesson);
+  const progress = Math.round((completedSet.size / LESSONS.length) * 100);
+
+  const markComplete = (id: string) => {
+    setCompletedSet((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      localStorage.setItem("learning_completed", JSON.stringify([...next]));
+      return next;
+    });
+  };
+
+  const goToNextLesson = () => {
+    const next = LESSONS[lessonIdx + 1];
+    if (next) setActiveLesson(next.id);
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-indigo-50">
+      <Header />
+      <main className="flex-1 py-6 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-5">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#0d1b4b]">
+              💻 Learn Typing
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Step-by-step typing lessons — shuruwaat se expert tak
             </p>
-            <div
-              className="space-y-2 overflow-x-auto"
-              data-ocid="learning.panel"
-            >
-              {KEYBOARD_ROWS.map((row, ri) => (
-                <div
-                  key={row.join("-")}
-                  className={`flex gap-1 ${
-                    ri === 1
-                      ? "ml-4"
-                      : ri === 2
-                        ? "ml-7"
-                        : ri === 3
-                          ? "ml-10"
-                          : ri === 4
-                            ? "justify-center"
-                            : ""
-                  }`}
+          </div>
+
+          {/* Progress bar */}
+          <div className="bg-white rounded-xl border border-blue-100 shadow-sm p-4 mb-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-gray-700">
+                Lesson {lessonIdx + 1} of {LESSONS.length} — {lesson.title}
+              </span>
+              <span className="text-sm font-bold text-blue-600">
+                {progress}% complete
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div className="flex gap-1 mt-2 flex-wrap">
+              {LESSONS.map((l, i) => (
+                <button
+                  key={l.id}
+                  type="button"
+                  onClick={() => setActiveLesson(l.id)}
+                  title={l.title}
+                  className={[
+                    "w-6 h-6 rounded-full text-xs flex items-center justify-center font-bold border-2 transition-all",
+                    completedSet.has(l.id)
+                      ? "bg-green-500 text-white border-green-500"
+                      : activeLesson === l.id
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : "bg-white text-gray-400 border-gray-300",
+                  ].join(" ")}
                 >
-                  {row.map((key) => {
-                    const isHome = HOME_KEYS.includes(key);
-                    const isWide = [
-                      "⌫",
-                      "Tab",
-                      "Caps",
-                      "Enter",
-                      "Shift",
-                      "Space",
-                      "Shift2",
-                    ].includes(key);
-                    const displayKey = key === "Shift2" ? "Shift" : key;
-                    const colorClass = FINGER_MAP[key] || "bg-gray-100";
-                    return (
-                      <div
-                        key={key}
-                        className={[
-                          isWide ? "px-3" : "w-9",
-                          "h-9 rounded flex items-center justify-center text-xs font-semibold text-gray-700 border border-gray-300 shadow-sm",
-                          colorClass,
-                          isHome ? "ring-2 ring-offset-1 ring-blue-500" : "",
-                          key === "Space" ? "w-64" : "",
-                        ].join(" ")}
-                      >
-                        {displayKey}
-                      </div>
-                    );
-                  })}
-                </div>
+                  {completedSet.has(l.id) ? "✓" : i + 1}
+                </button>
               ))}
             </div>
-            <div className="mt-6 flex flex-wrap gap-3">
-              {[
-                { color: "bg-pink-300", label: "Left Pinky" },
-                { color: "bg-purple-300", label: "Left Ring" },
-                { color: "bg-blue-300", label: "Left Middle" },
-                { color: "bg-green-300", label: "Left Index" },
-                { color: "bg-yellow-300", label: "Right Index" },
-                { color: "bg-orange-300", label: "Right Middle" },
-                { color: "bg-red-300", label: "Right Ring" },
-                { color: "bg-rose-300", label: "Right Pinky" },
-              ].map((item) => (
-                <div key={item.label} className="flex items-center gap-2">
-                  <div
-                    className={`w-4 h-4 rounded ${item.color} border border-gray-300`}
-                  />
-                  <span className="text-xs text-gray-600">{item.label}</span>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+            {/* Left sidebar */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden sticky top-4">
+                <div className="bg-[#0d1b4b] text-white px-4 py-3 text-sm font-bold">
+                  📚 Lessons
                 </div>
-              ))}
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-gray-100 border-2 border-blue-500" />
-                <span className="text-xs text-gray-600">Home Row Key</span>
+                <div className="divide-y divide-gray-100">
+                  {LESSONS.map((l) => (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => setActiveLesson(l.id)}
+                      className={[
+                        "w-full text-left px-4 py-3 flex items-start gap-2 transition-all",
+                        activeLesson === l.id
+                          ? "bg-blue-50 border-l-4 border-blue-600"
+                          : "hover:bg-gray-50 border-l-4 border-transparent",
+                      ].join(" ")}
+                      data-ocid="learning.tab"
+                    >
+                      <span className="text-xl flex-shrink-0 mt-0.5">
+                        {l.icon}
+                      </span>
+                      <div className="min-w-0">
+                        <div
+                          className={`text-xs font-bold truncate ${activeLesson === l.id ? "text-blue-700" : "text-gray-800"}`}
+                        >
+                          {l.title}
+                          {completedSet.has(l.id) && (
+                            <span className="ml-1 text-green-500">✓</span>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-0.5">
+                          {l.desc}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </section>
 
-          <section className="bg-[#0d1b4b] text-white rounded-xl shadow p-6 mb-8">
-            <h2 className="text-lg font-bold mb-3">The Home Row</h2>
-            <p className="text-gray-300 text-sm mb-4">
-              The home row is the foundation of touch typing. Always start and
-              return your fingers to these positions.
-            </p>
-            <div className="flex gap-2 flex-wrap">
-              {["A", "S", "D", "F", "—", "J", "K", "L", ";"].map((key) => (
-                <div
-                  key={key}
-                  className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg ${
-                    key === "—"
-                      ? "bg-transparent text-gray-500"
-                      : ["F", "J"].includes(key)
-                        ? "bg-orange-500 text-white"
-                        : "bg-white text-[#0d1b4b]"
-                  }`}
-                >
-                  {key}
+            {/* Right content */}
+            <div className="lg:col-span-3 space-y-5">
+              {/* Lesson header */}
+              <div className="bg-white rounded-xl border border-blue-100 shadow-sm p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-3xl">{lesson.icon}</span>
+                      <h2 className="text-xl font-bold text-[#0d1b4b]">
+                        {lesson.title}
+                      </h2>
+                      {completedSet.has(lesson.id) && (
+                        <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-semibold">
+                          ✓ Completed
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600">{lesson.desc}</p>
+                    {lesson.keys.length > 0 && (
+                      <div className="flex gap-1 mt-2 flex-wrap">
+                        {lesson.keys.map((k) => (
+                          <span
+                            key={k}
+                            className="inline-block bg-[#0d1b4b] text-yellow-300 text-xs font-bold px-2 py-0.5 rounded"
+                          >
+                            {k}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {lessonIdx < LESSONS.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={goToNextLesson}
+                      className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex-shrink-0"
+                      data-ocid="learning.primary_button"
+                    >
+                      Next →
+                    </button>
+                  )}
                 </div>
-              ))}
-            </div>
-            <p className="text-orange-300 text-sm mt-3">
-              F and J keys have bumps &mdash; use them to find the home row
-              without looking!
-            </p>
-          </section>
+              </div>
 
-          <section className="mb-8">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">
-              Typing Tips for Exam Success
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {TIPS.map((tip, i) => (
-                <div
-                  key={tip.title}
-                  className="bg-white rounded-xl shadow p-5"
-                  data-ocid={`learning.item.${i + 1}`}
-                >
-                  <div className="text-3xl mb-3">{tip.icon}</div>
-                  <h3 className="font-bold text-gray-800 mb-2">{tip.title}</h3>
-                  <p className="text-sm text-gray-600">{tip.desc}</p>
+              {/* Intro lesson */}
+              {lesson.id === "intro" && (
+                <div className="bg-white rounded-xl border border-blue-100 shadow-sm p-5 space-y-4">
+                  <h3 className="font-bold text-[#0d1b4b] text-lg">
+                    Typing Kaise Seekhein?
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      {
+                        color: "blue",
+                        step: 1,
+                        text: "Pehle Home Row keys seekho (ASDF + JKL;). Ye aapki base position hai.",
+                      },
+                      {
+                        color: "green",
+                        step: 2,
+                        text: "F aur J keys pe bumps hote hain — inhe feel karo, keyboard mat dekho.",
+                      },
+                      {
+                        color: "orange",
+                        step: 3,
+                        text: "Ek haath ki ungliyaan ASDF pe, doosre ki JKL; pe — yahi sahi posture hai.",
+                      },
+                      {
+                        color: "purple",
+                        step: 4,
+                        text: "Accuracy pehle, speed baad mein. Daily 15-30 min practice karo.",
+                      },
+                    ].map(({ color, step, text }) => (
+                      <div
+                        key={step}
+                        className={`bg-${color}-50 rounded-lg p-3`}
+                      >
+                        <div className={`font-bold text-${color}-700 mb-1`}>
+                          🎯 Step {step}
+                        </div>
+                        <p className="text-sm text-gray-700">{text}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p className="text-sm text-yellow-800 font-medium">
+                      💡 Exam Targets: SSC/Railway — 35 WPM English / 30 WPM
+                      Hindi | Delhi Police — 35 WPM | Banking — 30 WPM
+                    </p>
+                  </div>
+                  <KeyboardVisual lessonKeys={[]} currentKey="" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      markComplete("intro");
+                      setActiveLesson("homerow");
+                    }}
+                    className="w-full py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+                    data-ocid="learning.primary_button"
+                  >
+                    Shuru Karen — Home Row Lesson →
+                  </button>
                 </div>
-              ))}
-            </div>
-          </section>
+              )}
 
-          <section className="bg-white rounded-xl shadow p-6 mb-8">
-            <h2 className="text-lg font-bold text-gray-800 mb-2">
-              Common Practice Words
-            </h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Start with these high-frequency words to build muscle memory
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {PRACTICE_WORDS.map((word) => (
-                <span
-                  key={word}
-                  className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium border border-blue-200"
+              {/* Practice lessons */}
+              {lesson.id !== "intro" && (
+                <div className="bg-white rounded-xl border border-blue-100 shadow-sm p-5">
+                  <LessonPractice
+                    key={lesson.id}
+                    lessonId={lesson.id}
+                    lessonKeys={lesson.keys}
+                    onComplete={() => markComplete(lesson.id)}
+                  />
+                  {completedSet.has(lesson.id) &&
+                    lessonIdx < LESSONS.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={goToNextLesson}
+                        className="mt-4 w-full py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
+                        data-ocid="learning.primary_button"
+                      >
+                        ✓ Next Lesson: {LESSONS[lessonIdx + 1]?.title} →
+                      </button>
+                    )}
+                </div>
+              )}
+
+              {/* Tips */}
+              <div className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowTips((v) => !v)}
+                  className="w-full px-5 py-3 flex items-center justify-between bg-amber-50 hover:bg-amber-100 transition-all"
+                  data-ocid="learning.toggle"
                 >
-                  {word}
-                </span>
-              ))}
+                  <span className="font-bold text-amber-800">
+                    💡 Pro Typing Tips ({TIPS.length})
+                  </span>
+                  <span className="text-amber-600">
+                    {showTips ? "▲ Hide" : "▼ Show"}
+                  </span>
+                </button>
+                {showTips && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4">
+                    {TIPS.map((tip) => (
+                      <div
+                        key={tip.title}
+                        className="bg-amber-50 border border-amber-200 rounded-lg p-3"
+                      >
+                        <div className="font-bold text-amber-800 mb-1">
+                          {tip.icon} {tip.title}
+                        </div>
+                        <p className="text-xs text-gray-600">{tip.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </section>
-
-          {/* Pro Typing */}
-          <ProTyping />
+          </div>
         </div>
       </main>
       <Footer />

@@ -1,37 +1,35 @@
-# Manish Karwashra Typing
+# Manish Karwashra Typing Platform
 
 ## Current State
-Multi-page exam preparation platform with sidebar navigation. MCQ mock tests exist for SSC, Railway, NTPC, Banking, Delhi Police, DSSSB, HSSC, CTET. Result screens show score/percentage but NO answer key or full solution. SSCMCQInterface has a basic result view with Try Again button. ExamModePage has Railway card (id: "railway") - clicking MCQ navigates to `/mcq/railway` which should use TCSMCQInterface. NTPC Graduate/Undergraduate mocks exist. GamesPage has Falling Words and Time Attack games only.
+- Multi-page typing/MCQ practice platform with sidebar navigation
+- Auth system using localStorage (login, register, forgot password)
+- LiveTest page with 6 exam groups, all using 600s duration, no Hartron, no language filter
+- Certificate component exists but ResultsHistory shows 'coming soon' toast instead of real download
+- LearningTyping page has keyboard layout display, tips, and ProTyping section but lacks structured step-by-step learning
 
 ## Requested Changes (Diff)
 
 ### Add
-- **Answer Key in all MCQ result screens**: After submitting, show full list of all questions with: question text, user's answer (highlighted green if correct, red if wrong), and correct answer clearly marked
-- **Full Solution panel** in result: below each question in answer key, show which option was correct with a note
-- **New Games in GamesPage**: 
-  1. Car Racing Game - two cars on track, user types words to accelerate their car, opponent auto-races
-  2. Balloon Pop Game - balloons float up with words, type the word to pop balloon before it escapes top
-  3. Boy-Girls Character Selection before games - pick avatar (boy/girl) that shows during play
-  4. Toys Theme typing game - typing room themed with toys, type words that appear on toys
-- **Mock Test Lock** - show a simple name/ID entry gate before accessing mock test list (localStorage-based, no backend needed). User enters name once, saved to localStorage
-- **Certificate** - ensure certificate button appears in ALL MCQ interfaces (SSCMCQInterface, TCSMCQInterface, NTAMCQInterface) after qualifying, not just SSC
+- Hartron exam group to LiveTest with 15 min duration and Haryana categories
+- Language select (Hindi/English) in LiveTest for each exam
+- Demo account in AuthContext so users can always test login (user: demo, pass: demo123)
+- Certificate download button in ResultsHistory (replace 'coming soon' toast with real Certificate component)
+- Structured step-by-step lessons in LearningTyping: Beginner → Home Row → Top Row → Bottom Row → Number Keys → Word Practice → Sentence Practice with interactive typing for each
+- Finger guide animation/indicator showing which finger to use for next key
 
 ### Modify
-- **SSCMCQInterface result screen**: Add scrollable answer key section below score cards. Each row: Q number, question text (truncated), user answer, correct answer, ✓/✗ icon
-- **TCSMCQInterface result screen**: Same answer key addition
-- **NTAMCQInterface result screen**: Same answer key addition  
-- **ExamModePage Railway card**: Change id from "railway" to "railway-ntpc" so MCQ button correctly navigates to `/mcq/railway-ntpc` which uses TCSMCQInterface. Ensure Typing Test button also uses railway-ntpc.
-- **GamesPage**: Add Car, Balloon, Boy-Girls character picker, Toys game alongside existing games
-- **MockTestListPage**: Fix any blurred/disabled-looking mock buttons - ensure all mock number buttons are fully clickable and visible
+- LiveTest exam durations to match real exams: SSC=600s(10min), Banking=600s, Railway=900s(15min), Delhi Police=600s, Teaching=600s, HSSC=900s, Hartron=900s
+- LiveTest paragraph font size: make it adjustable with min 250px height max 1500px (i.e., min-height 250px max-height 1500px for text display area); also font size slider stays
+- Login error messages: improve to guide user to register if user not found; add 'Pehle register karein' hint
+- AuthContext: add demo account (username: demo, password: demo123) that always works; fix any lookup issues
+- LearningTyping: replace simple tips+ProTyping with a rich, structured learning flow: lesson selector sidebar on left, lesson content + interactive keyboard + practice area on right
+- ResultsHistory: replace 'certificate coming soon' button with actual Certificate modal (store examName, date, wpm, accuracy, score in result and pass to Certificate component)
 
 ### Remove
-- Nothing removed
+- 'Certificate feature coming soon!' toast in ResultsHistory
 
 ## Implementation Plan
-1. Fix ExamModePage: change Railway exam id from "railway" to "railway-ntpc" so routing works correctly
-2. Fix MockTestListPage: investigate and fix any CSS blur/opacity issues on mock buttons
-3. Update SSCMCQInterface result: add answer key section (scrollable list, Q text + user answer + correct answer)
-4. Update TCSMCQInterface result: same answer key section
-5. Update NTAMCQInterface result: same answer key section + ensure certificate button visible
-6. Add Mock Lock gate to MockTestListPage: simple name entry modal, stored in localStorage
-7. Add new games to GamesPage: Car Racing, Balloon Pop, Boy-Girls picker, Toys theme game
+1. Update AuthContext: add demo account seed on first load; improve error messages in LoginPage to hint at registering
+2. Update LiveTest: add Hartron exam group, per-exam durations, language filter (Hindi/English) for each exam, paragraph height min 250px max 1500px configurable via slider
+3. Update ResultsHistory: import Certificate component, add showCertificate state per result, render Certificate modal with stored data
+4. Rewrite LearningTyping: structured lesson system with keyboard-first learning, interactive practice, finger guides, lesson progress

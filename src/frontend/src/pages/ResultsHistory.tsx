@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import Certificate from "../components/Certificate";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import {
@@ -45,6 +46,7 @@ function formatDate(iso: string) {
 
 function ResultCard({ result, index }: { result: ExamResult; index: number }) {
   const isTyping = result.examType === "typing";
+  const [showCert, setShowCert] = useState(false);
 
   return (
     <div
@@ -137,12 +139,37 @@ function ResultCard({ result, index }: { result: ExamResult; index: number }) {
         <Button
           size="sm"
           className="w-full bg-amber-500 hover:bg-amber-600 text-white text-xs"
-          onClick={() => toast.info("Certificate feature coming soon!")}
+          onClick={() => setShowCert(true)}
           data-ocid={`results.certificate.button.${index + 1}`}
         >
           <Award className="w-3 h-3 mr-1" />
-          Get Certificate
+          Download Certificate
         </Button>
+      )}
+      {!result.passed && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full text-xs border-amber-300 text-amber-600 hover:bg-amber-50"
+          onClick={() => setShowCert(true)}
+          data-ocid={`results.certificate.button.${index + 1}`}
+        >
+          <Award className="w-3 h-3 mr-1" />
+          Download Certificate
+        </Button>
+      )}
+      {showCert && (
+        <Certificate
+          type={result.examType === "typing" ? "typing" : "mcq"}
+          candidateName="Student"
+          examName={result.examName}
+          wpm={result.wpm}
+          accuracy={result.accuracy}
+          score={result.score}
+          totalQuestions={result.total}
+          date={result.date}
+          onClose={() => setShowCert(false)}
+        />
       )}
     </div>
   );
